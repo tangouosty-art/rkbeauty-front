@@ -44,7 +44,8 @@
              <p>Statut Stripe: <strong>${s.payment_status}</strong></p>
              <p>Session status: <strong>${s.status || ""}</strong></p>`;
       } catch(e){
-        box.textContent = "Impossible de contacter le serveur. Vérifie que l’API est bien démarrée (port 3000).";
+        box.textContent = "Impossible de contacter le serveur. Veuillez réessayer dans quelques instants.";
+
       }
     }
 
