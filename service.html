@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RKbeauty - Réservation Prestation</title>
+  <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+  <link rel="stylesheet" href="css/style.css" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    .page-wrap { background: var(--cream); padding: 6rem 0; }
+    .card { max-width: 880px; margin: 0 auto; background: var(--white); border: 1px solid #e0e0e0; padding: 2.5rem; box-shadow: 0 20px 60px rgba(0,0,0,.08); }
+    .step-title { font-size: 1.6rem; letter-spacing: 1px; margin-bottom: 1rem; color: var(--dark); font-family: 'Playfair Display', serif; }
+    .muted { color: var(--text-light); }
+
+    /* Doctolib-like list */
+    .day-list { display: grid; gap: 14px; margin-top: 18px; }
+    details.day { border: 1px solid #d9d9d9; border-radius: 12px; overflow: hidden; background: #fff; }
+    details.day summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      color: var(--dark);
+    }
+    details.day summary::-webkit-details-marker { display:none; }
+    .slots { padding: 14px 18px 18px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+    @media (max-width: 680px){ .slots{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+
+    .slot-btn {
+      padding: 12px 10px;
+      border-radius: 10px;
+      border: 1px solid #dbe8ff;
+      background: #eaf4ff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .slot-btn[aria-pressed="true"]{
+      border-color: var(--primary-gold);
+      background: rgba(201,169,97,.18);
+    }
+    .slot-btn:disabled{ opacity: .45; cursor: not-allowed; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 680px){ .row{ grid-template-columns: 1fr; } }
+
+    .form-group { margin-bottom: 1.2rem; }
+    .form-group label { display:block; font-size:.85rem; text-transform: uppercase; letter-spacing: 2px; margin-bottom:.5rem; }
+    .form-control {
+      width: 100%;
+      padding: 1rem 1.2rem;
+      border: 2px solid #e0e0e0;
+      background: var(--cream);
+      font-size: 1rem;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .form-control:focus { outline: none; border-color: var(--primary-gold); background: #fff; }
+    .form-control[readonly]{ cursor:not-allowed; color: var(--primary-gold); font-weight: 700; }
+
+    .actions { display:flex; gap: 12px; justify-content: flex-end; margin-top: 14px; flex-wrap: wrap; }
+    .btn-primary {
+      padding: 1rem 2rem;
+      background: var(--black);
+      color: var(--white);
+      border: 2px solid var(--primary-gold);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .btn-primary:hover { background: var(--primary-gold); color: var(--black); }
+    .btn-ghost {
+      padding: 1rem 2rem;
+      background: transparent;
+      color: var(--black);
+      border: 2px solid #d9d9d9;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+
+    .hidden { display:none !important; }
+
+    .info-box{
+      background: var(--cream);
+      border-left: 4px solid var(--primary-gold);
+      padding: 14px 16px;
+      margin: 12px 0 0;
+      color: var(--text-light);
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header identique à tes pages -->
+  <header class="site-header">
+    <div class="container header-flex">
+      <div class="logo">
+        <img src="assets/images/favicon.ico" alt="Logo RKbeauty">
+        <h1>RK<span>beauty</span></h1>
+      </div>
+
+      <nav class="nav" aria-label="Navigation principale">
+        <ul class="nav-links">
+          <li><a href="index.html">Accueil</a></li>
+          <li><a href="service.html">Services</a></li>
+          <li><a href="formations.html">Formations</a></li>
+          <li><a href="reservation.html" aria-current="page">Réservation</a></li>
+        </ul>
+      </nav>
+
+      <div class="burger" id="burger" aria-label="Menu mobile" role="button" tabindex="0">
+        <div></div><div></div><div></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="page-wrap">
+    <div class="card">
+      <!-- STEP 1 -->
+      <section id="step1">
+        <a href="formations.html" class="muted" style="text-decoration:none;">← Étape précédente</a>
+        <h2 class="step-title" style="margin-top:14px;">Choisissez la date de consultation</h2>
+        <p class="muted">Sélectionnez un créneau horaire disponible.</p>
+
+        <div id="calendar" class="day-list"></div>
+        <div class="info-box" id="pickedInfo">Aucun créneau sélectionné.</div>
+
+        <div class="actions">
+          <button class="btn-primary" id="nextBtn" disabled>Suivant</button>
+        </div>
+      </section>
+
+      <!-- STEP 2 -->
+      <section id="step2" class="hidden">
+        <a href="#" id="backToCalendar" class="muted" style="text-decoration:none;">← Retour</a>
+        <h2 class="step-title" style="margin-top:14px;">Vos informations</h2>
+
+        <form id="serviceForm" novalidate>
+          <div class="row">
+            <div class="form-group">
+              <label for="nom">Nom *</label>
+              <input id="nom" class="form-control" type="text" required />
+            </div>
+            <div class="form-group">
+              <label for="prenom">Prénom *</label>
+              <input id="prenom" class="form-control" type="text" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input id="email" class="form-control" type="email" required />
+          </div>
+
+          <div class="form-group">
+            <label for="maquillage">Choix du maquillage *</label>
+            <select id="maquillage" class="form-control" required>
+              <option value="">-- Sélectionnez --</option>
+              <option value="Maquillage Nude" data-prix="50">Maquillage Nude</option>
+              <option value="Maquillage Soft Glam" data-prix="60">Maquillage Soft Glam</option>
+              <option value="Maquillage Soft Glam Sophistiqué" data-prix="70">Maquillage Soft Glam Sophistiqué</option>
+              <option value="Maquillage Sophistiqué" data-prix="80">Maquillage Sophistiqué</option>
+            </select>
+          </div>
+
+          <div class="row">
+            <div class="form-group">
+              <label for="prixTotal">Prix (non modifiable)</label>
+              <input id="prixTotal" class="form-control" type="text" readonly value="0€" />
+            </div>
+            <div class="form-group">
+              <label for="acompte">Acompte 50% (PayPal)</label>
+              <input id="acompte" class="form-control" type="text" readonly value="0€" />
+            </div>
+          </div>
+
+          <div class="info-box" id="summary"></div>
+
+          <div class="actions">
+            <button class="btn-primary" type="submit" id="reserveBtn">Réserver (PayPal)</button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <!-- Footer identique -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>RK<span>beauty</span></h3>
+          <p>L'excellence en formation maquillage</p>
+        </div>
+        <div class="footer-section">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="formations.html">Formations</a></li>
+            <li><a href="service.html">Réservation</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="tel:+33695890598">06 95 89 05 98</a></li>
+            <li><a href="mailto:contact@rkbeauty.fr">contact@rkbeauty.fr</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Réseaux</h4>
+          <div class="social-links">
+            <a href="#" aria-label="Instagram">📷</a>
+            <a href="#" aria-label="Facebook">👤</a>
+            <a href="#" aria-label="TikTok">🎵</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 RKbeauty. Tous droits réservés.</p>
+        <p class="footer-credit">Designed with Excellence</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+  <script type="module" src="js/service.js"></script>
+</body>
+</html>

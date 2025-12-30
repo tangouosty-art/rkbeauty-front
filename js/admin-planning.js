@@ -1,7 +1,8 @@
 // js/admin-planning.js
 import { CONFIG } from "./config.js"; // votre config exporte CONFIG :contentReference[oaicite:3]{index=3}
 
-const API_BASE = CONFIG.API_BASE || "http://localhost:3000";
+const API_BASE = CONFIG.API_BASE || "https://rkbeauty-api.onrender.com";
+
 
 function qs(id){ return document.getElementById(id); }
 
