@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Paiement validé</title>
+</head>
+<body>
+  <h1>Confirmation de paiement</h1>
+  <div id="box">Vérification…</div>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:3000";
+    const sessionId = new URLSearchParams(location.search).get("session_id");
+
+    async function run(){
+      const box = document.getElementById("box");
+
+      if(!sessionId){
+        box.textContent = "Session introuvable.";
+        return;
+      }
+
+      try{
+        const r = await fetch(`${API_BASE}/payments/session/${encodeURIComponent(sessionId)}`);
+        const s = await r.json().catch(() => ({}));
+
+        if(!r.ok){
+          box.textContent = s.message || "Erreur lors de la vérification du paiement.";
+          return;
+        }
+
+        const ok = s.payment_status === "paid";
+
+        box.innerHTML = ok
+          ? `<h2>Paiement validé</h2>
+             <p>Statut Stripe: <strong>${s.payment_status}</strong></p>
+             <p>Session status: <strong>${s.status || ""}</strong></p>
+             <p>Montant: <strong>${((s.amount_total||0)/100).toFixed(2)} ${(s.currency||"").toUpperCase()}</strong></p>
+             <p>Email: <strong>${s.customer_details?.email || ""}</strong></p>
+             <p>Référence: <strong>${s.id}</strong></p>
+             <p>Merci. Votre paiement a bien été enregistré.</p>`
+          : `<h2>Paiement non confirmé</h2>
+             <p>Statut Stripe: <strong>${s.payment_status}</strong></p>
+             <p>Session status: <strong>${s.status || ""}</strong></p>`;
+      } catch(e){
+        box.textContent = "Impossible de contacter le serveur. Vérifie que l’API est bien démarrée (port 3000).";
+      }
+    }
+
+    run();
+  </script>
+</body>
+</html>

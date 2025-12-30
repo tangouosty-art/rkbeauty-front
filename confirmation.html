@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirmation de paiement</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <main style="max-width: 680px; margin: 80px auto; padding: 24px;">
+    <div style="border:1px solid #ddd; border-radius:16px; padding:24px;">
+      <h1>Confirmation de paiement</h1>
+
+      <p><strong>Réservation :</strong> <span id="resId">—</span></p>
+      <p><strong>Statut :</strong> <span id="resStatus">Chargement…</span></p>
+
+      <hr style="margin:16px 0;" />
+
+      <p><strong>Date :</strong> <span id="resDate">—</span></p>
+      <p><strong>Créneau :</strong> <span id="resSlot">—</span></p>
+      <p><strong>Formation :</strong> <span id="resFormation">—</span></p>
+      <p><strong>Client :</strong> <span id="resCustomer">—</span></p>
+
+      <p style="margin-top:18px;">
+        <a href="reservation.html">Retour à la réservation</a>
+      </p>
+
+      <p id="debug" style="margin-top:14px; color:#b00020;"></p>
+    </div>
+  </main>
+
+ <script type="module" src="js/confirmation.js"></script>
+
+</body>
+</html>

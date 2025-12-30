@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Réservez votre formation maquillage chez RKbeauty. Formations VIP, professionnelles et auto-formation disponibles.">
+    
+    <title>RKbeauty - Réservation</title>
+    
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* ========================================
+           HEADER STYLES
+           ======================================== */
+        .site-header {
+            background: var(--black);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--primary-gold);
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo img {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-gold);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            color: var(--white);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: 400;
+        }
+
+        .logo h1 span {
+            color: var(--primary-gold);
+            font-weight: 300;
+            font-style: italic;
+            text-transform: lowercase;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 3rem;
+        }
+
+        .nav-links a {
+            font-size: 0.95rem;
+            font-weight: 400;
+            color: var(--white);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            position: relative;
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--primary-gold);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after,
+        .nav-links a[aria-current="page"]::after {
+            width: 100%;
+        }
+
+        .burger {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+
+        .burger div {
+            width: 25px;
+            height: 2px;
+            background: var(--primary-gold);
+            transition: all 0.3s ease;
+        }
+
+        /* ========================================
+           FOOTER STYLES
+           ======================================== */
+        .site-footer {
+            background: linear-gradient(135deg, var(--dark) 0%, var(--secondary-gold) 100%);
+            background: var(--black);
+            color: var(--white);
+            padding: 5rem 0 2rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 4rem;
+            margin-bottom: 3rem;
+            padding-bottom: 3rem;
+            border-bottom: 1px solid rgba(201, 169, 97, 0.3);
+        }
+
+        .footer-section h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+            font-weight: 400;
+            letter-spacing: 3px;
+        }
+
+        .footer-section h3 span {
+            color: var(--primary-gold);
+            font-style: italic;
+        }
+
+        .footer-section h4 {
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 400;
+        }
+
+        .footer-section p {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-section a {
+            color: var(--white);
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            font-weight: 300;
+        }
+
+        .footer-section a:hover {
+            opacity: 1;
+            color: var(--primary-gold);
+            padding-left: 5px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .social-links a {
+            font-size: 1.3rem;
+            transition: transform 0.3s ease;
+        }
+
+        .social-links a:hover {
+            transform: scale(1.2);
+        }
+
+        .footer-bottom {
+            text-align: center;
+        }
+
+        .footer-bottom p {
+            margin: 0.5rem 0;
+            font-size: 0.85rem;
+            opacity: 0.6;
+            font-weight: 300;
+        }
+
+        .footer-credit {
+            font-style: italic;
+            color: var(--primary-gold);
+        }
+
+        /* ========================================
+           SCROLL TO TOP BUTTON
+           ======================================== */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--black);
+            color: var(--primary-gold);
+            border: 2px solid var(--primary-gold);
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .scroll-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-top:hover {
+            background: var(--primary-gold);
+            color: var(--black);
+            transform: translateY(-5px);
+        }
+
+        /* ========================================
+           BRAND BANNER
+           ======================================== */
+        .brand-banner {
+            background: var(--black);
+            padding: 1.5rem 0;
+            overflow: hidden;
+            border-top: 1px solid var(--primary-gold);
+            border-bottom: 1px solid var(--primary-gold);
+        }
+
+        .brand-scroll {
+            display: flex;
+            animation: scroll 30s linear infinite;
+            white-space: nowrap;
+        }
+
+        .brand-scroll span {
+            color: var(--primary-gold);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            padding: 0 3rem;
+            font-weight: 300;
+        }
+
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* ========================================
+           RESPONSIVE HEADER/FOOTER
+           ======================================== */
+        @media (max-width: 968px) {
+            .nav-links {
+                position: fixed;
+                right: -100%;
+                top: 70px;
+                flex-direction: column;
+                background: var(--black);
+                width: 100%;
+                text-align: center;
+                transition: 0.3s;
+                padding: 3rem 0;
+                gap: 2rem;
+            }
+
+            .nav-links.active {
+                right: 0;
+            }
+
+            .burger {
+                display: flex;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+                text-align: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+
+            .scroll-top {
+                bottom: 20px;
+                right: 20px;
+                width: 45px;
+                height: 45px;
+                font-size: 1.3rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo h1 {
+                font-size: 1.3rem;
+            }
+
+            .logo img {
+                width: 35px;
+                height: 35px;
+            }
+        }
+
+        /* ========================================
+           STYLES SPÉCIFIQUES RÉSERVATION
+           ======================================== */
+        .reservation-hero {
+            background: linear-gradient(135deg, var(--black) 0%, var(--dark) 100%);
+            padding: 8rem 0 4rem;
+            text-align: center;
+            border-bottom: 1px solid var(--primary-gold);
+        }
+
+        .reservation-hero h1 {
+            font-size: 4rem;
+            color: var(--white);
+            margin-bottom: 1rem;
+            font-weight: 400;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+        }
+
+        .reservation-hero h1 span {
+            color: var(--primary-gold);
+        }
+
+        .reservation-hero p {
+            font-size: 1.2rem;
+            color: var(--primary-gold);
+            font-style: italic;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .reservation-content {
+            padding: 6rem 0;
+            background: var(--cream);
+        }
+
+        .reservation-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .form-card {
+            background: var(--white);
+            padding: 4rem;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--dark);
+            margin-bottom: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            border: 2px solid #e0e0e0;
+            background: var(--cream);
+            font-size: 1rem;
+            color: var(--dark);
+            transition: all 0.3s ease;
+            font-family: 'Open Sans', sans-serif;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-gold);
+            background: var(--white);
+        }
+
+        .form-control[readonly] {
+            background: var(--cream);
+            cursor: not-allowed;
+            color: var(--primary-gold);
+            font-weight: 600;
+        }
+
+        select.form-control {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c9a961' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1.5rem center;
+            padding-right: 3rem;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--black);
+            color: var(--white);
+            border: 2px solid var(--primary-gold);
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            margin-top: 1rem;
+        }
+
+        .btn-submit:hover {
+            background: var(--primary-gold);
+            color: var(--black);
+        }
+
+        .payment-section {
+            margin-top: 4rem;
+            padding: 3rem;
+            background: var(--black);
+            border-left: 5px solid var(--primary-gold);
+            text-align: center;
+        }
+
+        .payment-section p {
+            color: var(--white);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .payment-section strong {
+            color: var(--primary-gold);
+        }
+
+        .btn-payment {
+            display: inline-block;
+            padding: 1.2rem 3rem;
+            background: var(--primary-gold);
+            color: var(--black);
+            border: 2px solid var(--primary-gold);
+            text-decoration: none;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 600;
+            transition: all 0.4s ease;
+        }
+
+        .btn-payment:hover {
+            background: transparent;
+            color: var(--primary-gold);
+        }
+
+        .formation-info {
+            background: var(--cream);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-gold);
+        }
+
+        .formation-info h3 {
+            font-size: 1.2rem;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .formation-info p {
+            color: var(--text-light);
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-highlight {
+            display: inline-block;
+            background: var(--primary-gold);
+            color: var(--black);
+            padding: 0.3rem 1rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+        }
+
+        .required-star {
+            color: var(--primary-gold);
+            margin-left: 3px;
+        }
+
+        @media (max-width: 768px) {
+            .reservation-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .form-card {
+                padding: 2rem;
+            }
+
+            .payment-section {
+                padding: 2rem;
+            }
+        }
+    </style>
+    <script src="https://js.stripe.com/v3/"></script>
+
+</head>
+
+<body>
+    <!-- ========================================
+         HEADER
+         ======================================== -->
+    <header class="site-header">
+        <div class="container header-flex">
+            <div class="logo">
+                <img src="assets/images/favicon.ico" alt="Logo RKbeauty">
+                <h1>RK<span>beauty</span></h1>
+            </div>
+            
+            <nav class="nav" aria-label="Navigation principale">
+                <ul class="nav-links">
+                    <li><a href="index.html">Accueil</a></li>
+                    <li><a href="index.html#apropos"> A propos</a></li>
+                    <li><a href="index.html#services">Services</a></li>
+                    <li><a href="formations.html">Formations</a></li>
+                    <li><a href="reservation.html" aria-current="page">Réservation</a></li>
+                </ul>
+            </nav>
+            
+            <div class="burger" id="burger" aria-label="Menu mobile" role="button" tabindex="0">
+                <div></div>
+                <div></div>
+                <div></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========================================
+         HERO RÉSERVATION
+         ======================================== -->
+    <section class="reservation-hero">
+        <div class="container">
+            <h1>RÉSER<span>VATION</span></h1>
+            <p>Réservez votre place pour une expérience d'exception</p>
+        </div>
+    </section>
+
+    <!-- ========================================
+         BRAND BANNER
+         ======================================== -->
+    <div class="brand-banner">
+        <div class="brand-scroll">
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+        </div>
+    </div>
+
+    <!-- ========================================
+         FORMULAIRE DE RÉSERVATION
+         ======================================== -->
+    <section class="reservation-content">
+        <div class="container reservation-container">
+            
+            <!-- Information sur les formations -->
+            <div class="formation-info fade-in">
+                <h3>📋 Informations Importantes</h3>
+                <p>✓ Remplissez le formulaire ci-dessous avec vos informations</p>
+                <p>✓ Sélectionnez la formation de votre choix</p>
+                <p>✓ Vous avez la posibiliter de payer en plusieurs fois sur votre formation</p>
+                <p>✓ Vous recevrez une confirmation par email dans les 24h</p>
+            </div>
+
+            <!-- Formulaire -->
+            <div class="form-card fade-in">
+                <form id="reservationForm" novalidate>
+
+                    <!-- Nom -->
+                    <div class="form-group">
+                        <label for="nom">
+                            Nom Complet <span class="required-star">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            name="nom" 
+                            id="nom" 
+                            required 
+                            class="form-control"
+                            placeholder="Votre nom et prénom"
+                        >
+                    </div>
+
+                    <!-- Email -->
+                    <div class="form-group">
+                        <label for="email">
+                            Adresse E-mail <span class="required-star">*</span>
+                        </label>
+                        <input 
+                            type="email" 
+                            name="email" 
+                            id="email" 
+                            required 
+                            class="form-control"
+                            placeholder="votre@email.com"
+                        >
+                    </div>
+
+                    <!-- Téléphone -->
+                    <div class="form-group">
+                        <label for="telephone">
+                            Numéro de Téléphone <span class="required-star">*</span>
+                        </label>
+                        <input 
+                            type="tel" 
+                            name="telephone" 
+                            id="telephone" 
+                            required 
+                            class="form-control"
+                            placeholder="+33 6 XX XX XX XX"
+                        >
+                    </div>
+
+                    <!-- Sélection Formation -->
+                    <div class="form-group">
+                        <label for="formation-select">
+                            Choisissez Votre Formation <span class="required-star">*</span>
+                        </label>
+                       <select id="formation-select" name="formation_choisie" class="form-control" required>
+                            <option value="">-- Sélectionnez une formation --</option>
+
+                            <option value="Formation 2 jours" data-prix="250">Formation 2 jours - 250€</option>
+                            <option value="Formation 4 jours" data-prix="400">Formation 4 jours - 400€</option>
+                            <option value="Formation 5 jours" data-prix="500">Formation 5 jours - 500€</option>
+
+                            <option value="Formation 1 semaine" data-prix="650">Formation 1 semaine - 650€</option>
+                            <option value="Formation 2 semaines" data-prix="800">Formation 2 semaines - 800€</option>
+                            <option value="Formation 4 semaines" data-prix="900">Formation 4 semaines - 900€</option>
+                        </select>
+
+                    </div>
+
+                    <!-- Formation sélectionnée (auto-rempli) -->
+                    <div class="form-group">
+                        <label for="formation">
+                            Formation Sélectionnée
+                        </label>
+                        <input 
+                            type="text" 
+                            name="formation" 
+                            id="formation" 
+                            required 
+                            class="form-control" 
+                            readonly
+                            placeholder="Choisissez d'abord une formation"
+                        >
+                    </div>
+                
+                    <!-- Prix (auto-rempli) -->
+                    <div class="form-group">
+                        <label for="prix">
+                            Montant total de la formation selectionnée
+                        </label>
+                        <input 
+                            type="text" 
+                            id="prix" 
+                            name="prix"
+                            class="form-control" 
+                            readonly
+                            placeholder="0€"
+                        >
+                    </div>
+
+                    <!-- Date souhaitée -->
+                    <div class="form-group">
+                        <label for="date">
+                            Date Souhaitée <span class="required-star">*</span>
+                        </label>
+                        <input 
+                            type="date" 
+                            name="date" 
+                            id="date" 
+                            required 
+                            class="form-control"
+                        >
+                    </div>
+                    <!-- Créneau (affiché après choix de date) -->
+                    <div class="form-group">
+                        <label for="slot">Créneau <span class="required-star">*</span></label>
+                        <select id="slot" name="slot" class="form-control" required>
+                        <option value="">-- Choisissez un créneau --</option>
+                        <option value="morning">Matin</option>
+                        <option value="afternoon">Après-midi</option>
+                        </select>
+                        <!-- Ici on affiche les places restantes -->
+                    <p id="slotInfo" style="margin-top:10px; font-size:0.95rem; color: var(--text-light);"></p>
+                    </div>
+
+
+                    <!-- Bouton Submit -->
+                    <button type="submit" class="btn-submit" id="payBtn"> Payer</button>
+
+                </form>
+            </div>
+            
+        </div>
+    </section>
+
+    <!-- ========================================
+         BRAND BANNER
+         ======================================== -->
+    <div class="brand-banner">
+        <div class="brand-scroll">
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+            <span>RKBEAUTY</span>
+        </div>
+    </div>
+
+    <!-- ========================================
+         FOOTER
+         ======================================== -->
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>RK<span>beauty</span></h3>
+                    <p>L'excellence en formation maquillage</p>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Navigation</h4>
+                    <ul>
+                        <li><a href="index.html">Accueil</a></li>
+                        <li><a href="formations.html">Formations</a></li>
+                        <li><a href="reservation.html">Réservation</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="tel:+33695890598">06 95 89 05 98</a></li>
+                        <li><a href="mailto:contact@rkbeauty.fr">contact@rkbeauty.fr</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Réseaux</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Instagram">📷</a>
+                        <a href="#" aria-label="Facebook">👤</a>
+                        <a href="#" aria-label="TikTok">🎵</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2025 RKbeauty. Tous droits réservés.</p>
+                <p class="footer-credit">Designed with Excellence</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ========================================
+         SCROLL TO TOP
+         ======================================== -->
+    <button id="scrollTop" class="scroll-top" aria-label="Retour en haut">
+        ↑
+    </button>
+
+    <script src="js/main.js"></script>
+    <script type="module" src="js/reservation.js"></script>
+
+   
+</body>
+</html>

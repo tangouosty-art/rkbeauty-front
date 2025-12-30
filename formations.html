@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Découvrez nos formations professionnelles en maquillage. Formules intensives et accélérées. Paiement en plusieurs fois disponible." />
+
+  <title>RKbeauty - Nos Formations</title>
+
+  <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico" />
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ========================================
+       FORMATIONS PAGE STYLES
+       ======================================== */
+    .formations-hero {
+      background: linear-gradient(135deg, var(--black) 0%, var(--dark) 100%);
+      padding: 8rem 0 4rem;
+      text-align: center;
+      border-bottom: 1px solid var(--primary-gold);
+    }
+
+    .formations-hero h1 {
+      font-size: 4rem;
+      color: var(--white);
+      margin-bottom: 1rem;
+      font-weight: 400;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+    }
+
+    .formations-hero h1 span {
+      color: var(--primary-gold);
+    }
+
+    .formations-hero p {
+      font-size: 1.3rem;
+      color: var(--primary-gold);
+      font-style: italic;
+      font-family: 'Playfair Display', serif;
+      max-width: 760px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .badge-line {
+      margin-top: 1.2rem;
+      display: inline-block;
+      padding: .55rem 1.1rem;
+      border: 1px solid rgba(201, 169, 97, .55);
+      color: var(--white);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: .85rem;
+      opacity: .9;
+    }
+
+    /* ========================================
+       SECTION TITLES
+       ======================================== */
+    .section-title {
+      font-size: 3.2rem;
+      color: var(--dark);
+      margin-bottom: 2.8rem;
+      text-align: center;
+      font-weight: 400;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      position: relative;
+    }
+
+    .section-title::after {
+      content: '';
+      position: absolute;
+      bottom: -1rem;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 3px;
+      background: var(--primary-gold);
+    }
+
+    /* ========================================
+       FORMULES SECTION (affiche)
+       ======================================== */
+    .formules-section {
+      padding: 7rem 0 8rem;
+      background: var(--cream);
+    }
+
+    .formules-subtitle {
+      text-align: center;
+      margin: -1.4rem auto 3.2rem;
+      max-width: 900px;
+      color: var(--text-light);
+      font-size: 1.05rem;
+      line-height: 1.7;
+    }
+
+    .formules-subtitle strong {
+      color: var(--dark);
+    }
+
+    .formules-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1.6rem 2.6rem;
+      align-items: stretch;
+    }
+
+    .formule-card {
+      background: var(--black);
+      border: 1px solid rgba(201, 169, 97, .55);
+      padding: 2.4rem 2rem;
+      text-align: center;
+      transition: transform .25s ease, box-shadow .25s ease;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .formule-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 20% 20%, rgba(201,169,97,.18), transparent 55%),
+                  radial-gradient(circle at 80% 70%, rgba(201,169,97,.12), transparent 55%);
+      pointer-events: none;
+    }
+
+    .formule-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, .18);
+    }
+
+    .formule-card h3 {
+      color: var(--white);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: .9rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .formule-price {
+      display: inline-block;
+      margin: .6rem 0 1.6rem;
+      padding: .55rem 1.5rem;
+      background: var(--primary-gold);
+      color: var(--black);
+      font-weight: 800;
+      font-size: 1.55rem;
+      font-family: "Playfair Display", serif;
+      position: relative;
+      z-index: 1;
+    }
+
+    .formule-note {
+      color: rgba(255,255,255,.78);
+      font-size: .95rem;
+      line-height: 1.6;
+      margin-bottom: 1.6rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Bouton (on réutilise ton style btn-card) */
+    .btn-card {
+      display: inline-block;
+      padding: 1rem 3rem;
+      background: transparent;
+      color: var(--white);
+      border: 2px solid var(--primary-gold);
+      text-decoration: none;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+      transition: all 0.35s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .btn-card:hover {
+      background: var(--primary-gold);
+      color: var(--black);
+      transform: translateX(10px);
+    }
+
+    /* ========================================
+       RESPONSIVE
+       ======================================== */
+    @media (max-width: 968px) {
+      .formations-hero h1 { font-size: 2.5rem; }
+      .section-title { font-size: 2.4rem; }
+
+      .formules-grid { grid-template-columns: 1fr; }
+      .formule-card { padding: 2.2rem 1.6rem; }
+      .btn-card { padding: 1rem 2.2rem; }
+    }
+
+    @media (max-width: 480px) {
+      .formations-hero h1 { font-size: 2rem; }
+      .formations-hero p { font-size: 1.1rem; }
+      .section-title { font-size: 2rem; }
+      .formule-price { font-size: 1.35rem; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ========================================
+       HEADER
+       ======================================== -->
+  <header class="site-header">
+    <div class="container header-flex">
+      <div class="logo">
+        <img src="assets/images/favicon.ico" alt="Logo RKbeauty">
+        <h1>RK<span>beauty</span></h1>
+      </div>
+
+      <nav class="nav" aria-label="Navigation principale">
+        <ul class="nav-links">
+          <li><a href="index.html">Accueil</a></li>
+          <!-- Si tu as une page services, garde service.html ; sinon supprime ce lien -->
+          <li><a href="service.html">Services</a></li>
+          <li><a href="formations.html" aria-current="page">Formations</a></li>
+          <li><a href="reservation.html">Réservation</a></li>
+        </ul>
+      </nav>
+
+      <div class="burger" id="burger" aria-label="Menu mobile" role="button" tabindex="0">
+        <div></div><div></div><div></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ========================================
+       HERO FORMATIONS
+       ======================================== -->
+  <section class="formations-hero">
+    <div class="container">
+      <h1>FORMA<span>TIONS</span></h1>
+      <p>
+        Formations intensives et accélérées pour devenir <strong>Make-up Artist professionnelle</strong>
+        et entrepreneuse accomplie.
+      </p>
+      <div class="badge-line">Paiement en plusieurs fois disponible (sous conditions)</div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       BRAND BANNER (si ton style.css le gère)
+       ======================================== -->
+  <div class="brand-banner">
+    <div class="brand-scroll">
+      <span>RKBEAUTY</span><span>RKBEAUTY</span><span>RKBEAUTY</span><span>RKBEAUTY</span>
+      <span>RKBEAUTY</span><span>RKBEAUTY</span><span>RKBEAUTY</span><span>RKBEAUTY</span>
+      <span>RKBEAUTY</span><span>RKBEAUTY</span>
+    </div>
+  </div>
+
+  <!-- ========================================
+       FORMULES (REMPLACE Auto/Pro/VIP)
+       ======================================== -->
+  <section class="formules-section">
+    <div class="container">
+      <h2 class="section-title fade-in">Formules de formation</h2>
+
+      <p class="formules-subtitle fade-in">
+        Choisis la formule qui correspond à ton objectif. <strong>Paiement en plusieurs fois</strong> possible selon éligibilité.
+      </p>
+
+      <div class="formules-grid fade-in">
+        <!-- 2 jours -->
+        <article class="formule-card">
+          <h3>2 jours</h3>
+          <p class="formule-price">250€</p>
+          <p class="formule-note">Format intensif pour apprendre les bases solides et des techniques efficaces.</p>
+          <a class="btn-card" href="reservation.html?formation=Formation%202%20jours&prix=250">Réserver</a>
+        </article>
+
+        <!-- 1 semaine -->
+        <article class="formule-card">
+          <h3>1 semaine</h3>
+          <p class="formule-price">650€</p>
+          <p class="formule-note">Approche complète pour gagner en précision, rapidité et confiance.</p>
+          <a class="btn-card" href="reservation.html?formation=Formation%201%20semaine&prix=650">Réserver</a>
+        </article>
+
+        <!-- 4 jours -->
+        <article class="formule-card">
+          <h3>4 jours</h3>
+          <p class="formule-price">400€</p>
+          <p class="formule-note">Perfectionnement + hygiène + techniques pro adaptées à différentes morphologies.</p>
+          <a class="btn-card" href="reservation.html?formation=Formation%204%20jours&prix=400">Réserver</a>
+        </article>
+
+        <!-- 2 semaines -->
+        <article class="formule-card">
+          <h3>2 semaines</h3>
+          <p class="formule-price">800€</p>
+          <p class="formule-note">Programme accéléré avec pratique intensive et montée en niveau progressive.</p>
+          <a class="btn-card" href="reservation.html?formation=Formation%202%20semaines&prix=800">Réserver</a>
+        </article>
+
+        <!-- 5 jours -->
+        <article class="formule-card">
+          <h3>5 jours</h3>
+          <p class="formule-price">500€</p>
+          <p class="formule-note">Pack idéal pour maîtriser plusieurs styles et travailler comme une pro.</p>
+          <a class="btn-card" href="reservation.html?formation=Formation%205%20jours&prix=500">Réserver</a>
+        </article>
+
+        <!-- 4 semaines -->
+        <article class="formule-card">
+          <h3>4 semaines</h3>
+          <p class="formule-price">900€</p>
+          <p class="formule-note">Le parcours le plus complet : expertise, pratique, routine et accompagnement.</p>
+          <a class="btn-card" href="reservation.html?formation=Formation%204%20semaines&prix=900">Réserver</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================================
+       BRAND BANNER
+       ======================================== -->
+  <div class="brand-banner">
+    <div class="brand-scroll">
+      <span>RKBEAUTY</span><span>RKBEAUTY</span><span>RKBEAUTY</span><span>RKBEAUTY</span>
+      <span>RKBEAUTY</span><span>RKBEAUTY</span><span>RKBEAUTY</span><span>RKBEAUTY</span>
+      <span>RKBEAUTY</span><span>RKBEAUTY</span>
+    </div>
+  </div>
+
+  <!-- ========================================
+       FOOTER (inchangé)
+       ======================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>RK<span>beauty</span></h3>
+          <p>L'excellence en formation maquillage</p>
+        </div>
+
+        <div class="footer-section">
+          <h4>Navigation</h4>
+          <ul>
+            <li><a href="index.html">Accueil</a></li>
+            <li><a href="formations.html">Formations</a></li>
+            <li><a href="reservation.html">Réservation</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="tel:+33695890598">06 95 89 05 98</a></li>
+            <li><a href="mailto:contact@rkbeauty.fr">contact@rkbeauty.fr</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4>Réseaux</h4>
+          <div class="social-links">
+            <a href="#" aria-label="Instagram">📷</a>
+            <a href="#" aria-label="Facebook">👤</a>
+            <a href="#" aria-label="TikTok">🎵</a>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>&copy; 2025 RKbeauty. Tous droits réservés.</p>
+        <p class="footer-credit">Designed with Excellence</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scroll to top -->
+  <button id="scrollTop" class="scroll-top" aria-label="Retour en haut">↑</button>
+
+  <!-- JavaScript -->
+  <script src="js/main.js"></script>
+</body>
+</html>
+    

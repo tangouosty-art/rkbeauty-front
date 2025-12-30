@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>RKbeauty — Admin Planning</title>
+  <link rel="stylesheet" href="css/style.css" />
+
+  <style>
+    .admin-wrap { max-width: 980px; margin: 100px auto; padding: 0 20px; }
+    .admin-card { background: var(--white); border: 1px solid #e0e0e0; padding: 28px; }
+    .admin-title { font-size: 2rem; letter-spacing: 2px; margin-bottom: 6px; }
+    .admin-sub { color: var(--text-light); margin-bottom: 20px; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 760px){ .grid{ grid-template-columns: 1fr; } }
+
+    label { display:block; margin-bottom: 6px; font-weight: 600; }
+    .form-control {
+      width: 100%;
+      padding: 1rem 1.2rem;
+      border: 2px solid #e0e0e0;
+      background: var(--cream);
+      font-size: 1rem;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .form-control:focus { outline:none; border-color: var(--primary-gold); background:#fff; }
+
+    .row { display:flex; gap: 12px; flex-wrap: wrap; align-items:center; margin-top: 16px; }
+
+    .btn-admin {
+      padding: 1rem 1.6rem;
+      background: var(--black);
+      color: var(--white);
+      border: 2px solid var(--primary-gold);
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+    .btn-admin:hover { background: var(--primary-gold); color: var(--black); }
+
+    .btn-ghost{
+      padding: 1rem 1.6rem;
+      background: transparent;
+      color: var(--dark);
+      border: 2px solid #d9d9d9;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 600;
+    }
+
+    .panel { margin-top: 18px; padding: 16px; background: var(--cream); border-left: 4px solid var(--primary-gold); }
+    .panel h3 { margin-bottom: 10px; font-size: 1.2rem; }
+    .slot-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 760px){ .slot-grid{ grid-template-columns: 1fr; } }
+
+    .slot-card { background:#fff; border: 1px solid #e0e0e0; padding: 14px; }
+    .slot-row { display:flex; justify-content: space-between; align-items:center; gap: 12px; flex-wrap: wrap; }
+
+    .badge { display:none; padding: 8px 12px; border: 1px solid rgba(201,169,97,.55); }
+    .ok { display:inline-block; color:#1b5e20; border-color:#1b5e20; }
+    .err { display:inline-block; color:#b00020; border-color:#b00020; }
+  </style>
+</head>
+
+<body>
+  <main class="admin-wrap">
+    <div class="admin-card">
+      <h1 class="admin-title">Admin — Planning</h1>
+      <p class="admin-sub">Gérer les quotas et blocages par type (Service / Formation).</p>
+
+      <div class="grid">
+        <div>
+          <label for="adminToken">Token admin</label>
+          <input id="adminToken" class="form-control" type="password" placeholder="x-admin-token" />
+        </div>
+
+        <div>
+          <label for="type">Type</label>
+          <select id="type" class="form-control">
+            <option value="service">Service</option>
+            <option value="formation">Formation</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="date">Date</label>
+          <input id="date" class="form-control" type="date" />
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>Créneaux</h3>
+        <div class="slot-grid">
+          <div class="slot-card">
+            <div class="slot-row">
+              <strong>Matin</strong>
+              <label style="display:flex; gap:8px; align-items:center; font-weight:600;">
+                <input id="morningOpen" type="checkbox" />
+                Ouvert
+              </label>
+            </div>
+            <div style="margin-top:10px;">
+              <label for="morningQuota">Quota matin</label>
+              <input id="morningQuota" class="form-control" type="number" min="0" step="1" value="8" />
+            </div>
+          </div>
+
+          <div class="slot-card">
+            <div class="slot-row">
+              <strong>Après-midi</strong>
+              <label style="display:flex; gap:8px; align-items:center; font-weight:600;">
+                <input id="afternoonOpen" type="checkbox" />
+                Ouvert
+              </label>
+            </div>
+            <div style="margin-top:10px;">
+              <label for="afternoonQuota">Quota après-midi</label>
+              <input id="afternoonQuota" class="form-control" type="number" min="0" step="1" value="8" />
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="btn-admin" id="loadBtn" type="button">Charger</button>
+          <button class="btn-admin" id="saveBtn" type="button">Enregistrer</button>
+          <button class="btn-ghost" id="blockDayBtn" type="button">Bloquer la journée</button>
+          <button class="btn-ghost" id="resetBtn" type="button">Réinitialiser</button>
+
+          <span id="status" class="badge"></span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module" src="js/admin-planning.js"></script>
+</body>
+</html>
