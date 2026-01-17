@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Promo spéciale</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    :root {
+      --gold: #ffd66b;
+      --gold-soft: #ffe9a4;
+      --dark: #050816;
+      --accent: #ff4d7a;
+      --white: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b1020;
+      color: var(--white);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* SECTION PROMO */
+    .promo-section {
+      position: relative;
+      overflow: hidden;
+      border-radius: 24px;
+      padding: 40px 24px 50px;
+      max-width: 1000px;
+      width: 95%;
+      background: radial-gradient(circle at top, #182849 0, #050816 50%, #02030b 100%);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+      isolation: isolate;
+    }
+
+    /* Canvas feu d'artifice en fond */
+    .promo-fireworks-canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .promo-header {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .promo-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      padding: 6px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      margin-bottom: 14px;
+      animation: tagGlow 1.8s ease-in-out infinite;
+    }
+
+    .promo-tag-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
+    }
+
+    @keyframes tagGlow {
+      0%, 100% { box-shadow: 0 0 0 rgba(255, 77, 122, 0); }
+      50%      { box-shadow: 0 0 16px rgba(255, 77, 122, 0.6); }
+    }
+
+    .promo-title {
+      font-size: clamp(1.8rem, 3vw, 2.4rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      color: var(--gold-soft);
+      text-shadow: 0 0 18px rgba(255, 214, 107, 0.5);
+    }
+
+    .promo-subtitle {
+      font-size: 0.95rem;
+      opacity: 0.85;
+    }
+
+    .promo-subtitle span {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .promo-offers {
+      display: grid;
+      gap: 18px;
+      margin-top: 26px;
+    }
+
+    @media (min-width: 720px) {
+      .promo-offers {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .promo-card {
+      position: relative;
+      border-radius: 20px;
+      padding: 20px 18px 22px;
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.12),
+        rgba(255, 255, 255, 0.02)
+      );
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      backdrop-filter: blur(14px);
+      box-shadow:
+        0 12px 30px rgba(0, 0, 0, 0.65),
+        0 0 20px rgba(255, 214, 107, 0.12);
+      overflow: hidden;
+      cursor: pointer;
+      transition:
+        transform 0.18s ease-out,
+        box-shadow 0.18s ease-out,
+        border-color 0.18s ease-out;
+    }
+
+    .promo-card::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: radial-gradient(circle at top, rgba(255, 214, 107, 0.25), transparent 60%);
+      opacity: 0;
+      transition: opacity 0.2s ease-out;
+      pointer-events: none;
+    }
+
+    .promo-card:hover {
+      transform: translateY(-6px) scale(1.01);
+      box-shadow:
+        0 18px 45px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(255, 214, 107, 0.3);
+      border-color: rgba(255, 214, 107, 0.9);
+    }
+
+    .promo-card:hover::before {
+      opacity: 1;
+    }
+
+    .promo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      background: rgba(0, 0, 0, 0.25);
+      margin-bottom: 12px;
+    }
+
+    .promo-badge span {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--gold);
+      box-shadow: 0 0 10px var(--gold);
+    }
+
+    .promo-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .promo-duration {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      margin-bottom: 12px;
+    }
+
+    .promo-price-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 4px;
+    }
+
+    .promo-price {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-shadow: 0 0 16px rgba(255, 214, 107, 0.8);
+      animation: pricePulse 1.6s ease-in-out infinite;
+    }
+
+    .promo-price small {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      font-weight: 500;
+      margin-left: 3px;
+    }
+
+    @keyframes pricePulse {
+      0%, 100% { transform: scale(1);   text-shadow: 0 0 8px rgba(255, 214, 107, 0.6); }
+      50%       { transform: scale(1.04); text-shadow: 0 0 18px rgba(255, 214, 107, 1); }
+    }
+
+    .promo-limited {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--accent);
+      font-weight: 600;
+      animation: limitedBlink 1.2s steps(2, jump-none) infinite;
+    }
+
+    @keyframes limitedBlink {
+      0%, 49%  { opacity: 1; }
+      50%, 100% { opacity: 0.25; }
+    }
+
+    .promo-details {
+      font-size: 0.78rem;
+      opacity: 0.78;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .promo-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--gold), #ffb347);
+      color: #2b1c03;
+      box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.7),
+        0 0 20px rgba(255, 214, 107, 0.7);
+      transition:
+        transform 0.15s ease-out,
+        box-shadow 0.15s ease-out,
+        filter 0.15s ease-out;
+    }
+
+    .promo-cta span {
+      font-size: 1.1rem;
+      line-height: 0;
+    }
+
+    .promo-cta:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.04);
+      box-shadow:
+        0 10px 26px rgba(0, 0, 0, 0.8),
+        0 0 28px rgba(255, 214, 107, 0.9);
+    }
+
+    .promo-cta:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.9),
+        0 0 18px rgba(255, 214, 107, 0.7);
+    }
+
+    .promo-footer-note {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.78rem;
+      opacity: 0.7;
+    }
+
+    .promo-footer-note strong {
+      color: var(--gold-soft);
+    }
+
+  </style>
+</head>
+<body>
+
+<section class="promo-section" id="promo-speciale">
+  <!-- Canvas feux d'artifice -->
+  <canvas class="promo-fireworks-canvas" id="fireworksCanvas"></canvas>
+
+  <div class="promo-header">
+    <div class="promo-tag">
+      <span class="promo-tag-dot"></span>
+      Offre limitée
+    </div>
+    <h2 class="promo-title">PROMO SPÉCIALE</h2>
+    <p class="promo-subtitle">
+      Deux formules <span>exceptionnelles</span> pendant une durée limitée.
+    </p>
+  </div>
+
+  <div class="promo-offers">
+    <!-- Offre 7 jours -->
+    <article class="promo-card" data-offer="7">
+      <div class="promo-badge">
+        <span></span> 7 jours intensifs
+      </div>
+      <h3 class="promo-name">Promo spéciale 7 JOURS</h3>
+      <p class="promo-duration">Durée : 7 jours consécutifs</p>
+
+      <div class="promo-price-row">
+        <div class="promo-price">
+          250€ <small>au lieu de 350€</small>
+        </div>
+        <div class="promo-limited">7 jours seulement</div>
+      </div>
+
+      <p class="promo-details">
+        Idéale si tu veux profiter d’un boost rapide, concentré et efficace.
+        Accès complet pendant 7 jours avec un accompagnement premium.
+      </p>
+      <button class="promo-cta" type="button" data-formation="Promo spéciale 7 jours" data-prix="250">Réserver cette offre<span>✨</span></button>
+
+    </article>
+
+    <!-- Offre 14 jours -->
+    <article class="promo-card" data-offer="14">
+      <div class="promo-badge">
+        <span></span> Meilleur rapport qualité / prix
+      </div>
+      <h3 class="promo-name">Promo spéciale 14 JOURS</h3>
+      <p class="promo-duration">Durée : 14 jours consécutifs</p>
+
+      <div class="promo-price-row">
+        <div class="promo-price">
+          350€ <small>au lieu de 600€</small>
+        </div>
+        <div class="promo-limited">places limitées</div>
+      </div>
+
+      <p class="promo-details">
+        Parfait pour aller plus loin, consolider les résultats et profiter
+        d’une immersion plus longue à un tarif avantageux.
+      </p>
+
+      <button class="promo-cta" type="button" data-formation="Promo spéciale 14 jours" data-prix="350">
+        Choisir cette formule <span>🎆</span></button>
+
+    </article>
+  </div>
+
+  <p class="promo-footer-note">
+    Offre valable <strong>pendant 7 jours</strong> uniquement.  
+    Après, les tarifs reviennent au prix normal.
+  </p>
+</section>
+
+<script>
+  // ========= FEUX D'ARTIFICE SIMPLE EN CANVAS =========
+  (function () {
+    const canvas = document.getElementById("fireworksCanvas");
+    const ctx = canvas.getContext("2d");
+
+    let width, height, fireworks, particles;
+
+    function resize() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    }
+
+    window.addEventListener("resize", resize);
+    resize();
+
+    fireworks = [];
+    particles = [];
+
+    function rand(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function createFirework(x, y) {
+      const count = Math.floor(rand(25, 40));
+      for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count;
+        const speed = rand(1.4, 2.8);
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          alpha: 1,
+          size: rand(2, 3.2),
+          life: rand(40, 60),
+          color: `hsl(${Math.floor(rand(10, 60))}, 100%, ${Math.floor(
+            rand(60, 80)
+          )}%)`,
+        });
+      }
+    }
+
+    function launchRandomFirework() {
+      const x = rand(width * 0.1, width * 0.9);
+      const y = rand(height * 0.15, height * 0.6);
+      createFirework(x, y);
+    }
+
+    let lastTime = 0;
+    let accumulator = 0;
+
+    function loop(timestamp) {
+      requestAnimationFrame(loop);
+
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+      accumulator += delta;
+
+      // Effet de traînée
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.globalCompositeOperation = "lighter";
+
+      if (accumulator > 450) {
+        launchRandomFirework();
+        accumulator = 0;
+      }
+
+      // Mise à jour des particules
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.03; // gravité
+        p.life--;
+        p.alpha -= 0.015;
+
+        if (p.life <= 0 || p.alpha <= 0) {
+          particles.splice(i, 1);
+          continue;
+        }
+
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    requestAnimationFrame(loop);
+
+    // Petit effet : feu d'artifice quand on clique sur une carte
+    document.querySelectorAll(".promo-card").forEach((card) => {
+      card.addEventListener("click", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        createFirework(x, y);
+      });
+    });
+  })();
+</script>
+
+<script>
+  // Redirection vers reservation.html avec formation + prix
+  document.querySelectorAll(".promo-cta").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const formation = btn.dataset.formation;
+      const prix = btn.dataset.prix;
+
+      if (!formation || !prix) return;
+
+      const url =
+        "reservation.html?formation=" +
+        encodeURIComponent(formation) +
+        "&prix=" +
+        encodeURIComponent(prix);
+
+      window.location.href = url;
+    });
+  });
+</script>
+
+
+</body>
+</html>

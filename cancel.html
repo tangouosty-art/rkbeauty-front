@@ -1,9 +1,60 @@
 <!doctype html>
 <html lang="fr">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paiement annulé</title></head>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Paiement annulé</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;max-width:720px;margin:40px auto;padding:0 16px;line-height:1.4}
+    .box{border:1px solid #ddd;border-radius:12px;padding:16px;margin-top:16px}
+    .muted{color:#666}
+    .ok{color: #0a7b34}
+    .err{color:#b00020}
+    a{display:inline-block;margin-top:12px}
+  </style>
+</head>
 <body>
   <h1>Paiement annulé</h1>
-  <p>Vous pouvez retourner à la réservation et réessayer.</p>
-  <a href="reservation.html">Retour</a>
+  <p class="muted">Vous pouvez retourner à la réservation et réessayer.</p>
+
+  <div class="box" id="status">Libération du créneau…</div>
+
+  <a href="reservation.html">Retour à la réservation</a>
+
+  <script>
+    // ⚠️ Mets la même base que sur success.html (confirmation.js)
+    // Exemple:
+    const API_BASE = "https://rkbeauty-api.onrender.com";
+
+    const groupId = new URLSearchParams(location.search).get("group_id");
+    const box = document.getElementById("status");
+
+    async function run() {
+      if (!groupId) {
+        box.innerHTML = `<p class="muted">Aucun groupe de réservation à libérer.</p>`;
+        return;
+      }
+
+      try {
+        const r = await fetch(`${API_BASE}/payments/cancel/${encodeURIComponent(groupId)}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await r.json().catch(() => ({}));
+
+        if (!r.ok) {
+          box.innerHTML = `<p class="err">Impossible de libérer le créneau : ${data.message || "Erreur inconnue"}</p>`;
+          return;
+        }
+
+        box.innerHTML = `<p class="ok">Créneau libéré. Vous pouvez refaire la réservation.</p>`;
+      } catch (e) {
+        box.innerHTML = `<p class="err">Erreur réseau. Réessayez plus tard.</p>`;
+      }
+    }
+
+    run();
+  </script>
 </body>
 </html>

@@ -93,6 +93,14 @@ a {
   text-transform: uppercase;
   font-weight: 400;
 }
+span{
+  color: #d4af37;
+}
+.promo{
+  text-align: center;
+  font-size: 4rem;
+  margin-bottom: 30px;
+}
 
 .logo h1 span {
   color: var(--primary-gold);
