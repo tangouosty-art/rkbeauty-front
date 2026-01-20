@@ -230,6 +230,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const dateRange = (payload.date && days) ? getDateRange(payload.date, days) : [];
   payload.dateRange = dateRange;
 
+  // ✅ AJOUTE ICI (temporaire)
+  const formationSelect = document.getElementById("formation-select");
+  console.log("selectedIndex =", formationSelect?.selectedIndex);
+  console.log("selected value =", formationSelect?.value);
+  console.log("days =", days);
+  console.log("dateRange length =", payload.dateRange.length);
+  console.log("dateRange =", payload.dateRange);
+  console.log("payload envoyé =", payload);
+
   if (!payload.date || !payload.slot)
     return alert("Choisis une date et un créneau.");
   if (!payload.customer.name || !payload.customer.email || !payload.customer.phone)
