@@ -1,6 +1,63 @@
 import { CONFIG } from "./config.js";
 const API_BASE = CONFIG.API_BASE;
 
+// ---------------- DOM ----------------
+const dateInput = document.getElementById("date");
+const slotSelect = document.getElementById("slot");
+const slotInfo = document.getElementById("slotInfo");
+const payBtn = document.getElementById("payBtn");
+
+// ---------------- HELPERS ----------------
+function todayISO() {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function setSlotInfo(text, isError = false) {
+  if (!slotInfo) return;
+  slotInfo.textContent = text || "";
+  slotInfo.style.color = isError ? "crimson" : "";
+}
+
+function setPayEnabled(enabled) {
+  if (payBtn) payBtn.disabled = !enabled;
+}
+
+function resetSlotUI() {
+  if (!slotSelect) return;
+
+  // remettre les options à leur texte de base
+  const morningOpt = [...slotSelect.options].find((o) => o.value === "morning");
+  const afternoonOpt = [...slotSelect.options].find((o) => o.value === "afternoon");
+
+  if (morningOpt) {
+    morningOpt.disabled = false;
+    morningOpt.textContent = "Matin de 11h à 14h";
+  }
+  if (afternoonOpt) {
+    afternoonOpt.disabled = false;
+    afternoonOpt.textContent = "Après-midi de 16h à 20h";
+  }
+
+  slotSelect.value = "";
+  setPayEnabled(false);
+}
+
+function setOptionState(value, disabled, labelSuffix = "") {
+  if (!slotSelect) return;
+  const opt = [...slotSelect.options].find((o) => o.value === value);
+  if (!opt) return;
+
+  opt.disabled = !!disabled;
+  opt.textContent =
+    value === "morning"
+      ? `Matin de 11h à 14h${labelSuffix}`
+      : `Après-midi de 16h à 20h${labelSuffix}`;
+}
+
 // ---------------- FORMATION ----------------
 function updateFormationFields() {
   const select = document.getElementById("formation-select");
@@ -16,15 +73,10 @@ function updateFormationFields() {
   prixInput.value = price ? `${price}€` : "0€";
 }
 
-/**
- * Pré-remplit le formulaire à partir des paramètres d'URL
- * ?formation=...&prix=...
- * Retourne true si quelque chose a été pré-rempli.
- */
 function initFromUrl() {
   const params = new URLSearchParams(window.location.search);
-  const qFormation = params.get("formation"); // ex: "Promo spéciale 7 jours"
-  const qPrix = params.get("prix");           // ex: "250"
+  const qFormation = params.get("formation");
+  const qPrix = params.get("prix");
 
   const formationInput = document.getElementById("formation");
   const prixInput = document.getElementById("prix");
@@ -32,27 +84,22 @@ function initFromUrl() {
 
   let used = false;
 
-  // 1) Essayer de faire correspondre à une option du select
   if (qFormation && select) {
     const match = Array.from(select.options).find(
-      (opt) =>
-        opt.value.trim().toLowerCase() ===
-        qFormation.trim().toLowerCase()
+      (opt) => opt.value.trim().toLowerCase() === qFormation.trim().toLowerCase()
     );
     if (match) {
       select.value = match.value;
-      updateFormationFields(); // remplit formation + prix depuis le select
+      updateFormationFields();
       used = true;
     }
   }
 
-  // 2) Si aucune option ne correspond (ex: promo spéciale qui n'est pas dans le select)
   if (qFormation && !used && formationInput) {
     formationInput.value = qFormation;
     used = true;
   }
 
-  // 3) Toujours essayer de remplir le prix si présent dans l'URL
   if (qPrix && prixInput) {
     prixInput.value = qPrix.replace("€", "").trim() + "€";
     used = true;
@@ -63,6 +110,7 @@ function initFromUrl() {
 
 function getFormationDays() {
   const select = document.getElementById("formation-select");
+  if (!select) return 1;
   const opt = select.options[select.selectedIndex];
   return opt?.dataset?.days ? Number(opt.dataset.days) : 1;
 }
@@ -79,62 +127,100 @@ function getDateRange(startDate, days) {
   return dates;
 }
 
-
 // ---------------- AVAILABILITY (FORMATION) ----------------
 async function fetchAvailability(date) {
   const res = await fetch(
     `${API_BASE}/availability?date=${encodeURIComponent(date)}&type=formation`
   );
-  const data = await res.json();
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error(data.message || "Erreur disponibilité");
   return data;
 }
 
-function setSlotInfo(text, isError = false) {
-  const el = document.getElementById("slotInfo");
-  if (!el) return;
-  el.textContent = text || "";
-  el.style.color = isError ? "crimson" : "";
+// ✅ détecte si la date est bloquée admin (supporte plusieurs formats)
+function isDayBlocked(av) {
+  // 1) si ton backend renvoie explicitement blocked: true
+  if (av?.blocked === true) return true;
+
+  // 2) si le backend gère le blocage via open=false sur les 2 slots
+  const mOpen = av?.slots?.morning?.open;
+  const aOpen = av?.slots?.afternoon?.open;
+  if (mOpen === false && aOpen === false) return true;
+
+  return false;
 }
 
-function applyAvailabilityToUI(av) {
-  const slotSelect = document.getElementById("slot");
-  if (!slotSelect) return;
+async function onDateChange() {
+  const date = dateInput?.value;
+  if (!date) return;
 
-  const morningOpt = [...slotSelect.options].find((o) => o.value === "morning");
-  const afternoonOpt = [...slotSelect.options].find(
-    (o) => o.value === "afternoon"
-  );
+  resetSlotUI();
+  setSlotInfo("Chargement des disponibilités...");
 
-  const morningRemaining = av.slots.morning.remaining;
-  const afternoonRemaining = av.slots.afternoon.remaining;
+  try {
+    const av = await fetchAvailability(date);
 
-  if (morningOpt) {
-    morningOpt.disabled = morningRemaining <= 0;
-    morningOpt.textContent =
-      morningRemaining > 0
-        ? `Matin (reste ${morningRemaining})`
-        : `Matin (complet)`;
+    // ✅ Date bloquée par l'admin : on stop tout ici
+    if (isDayBlocked(av)) {
+      setOptionState("morning", true, " — Bloqué");
+      setOptionState("afternoon", true, " — Bloqué");
+      setPayEnabled(false);
+      setSlotInfo("⛔ Cette date est bloquée par l'administration. Choisis une autre date.", true);
+      return;
+    }
+
+    const m = av.slots.morning;
+    const a = av.slots.afternoon;
+
+    // matin
+    if (!m.open) {
+      setOptionState("morning", true, " — Fermé");
+    } else if (m.remaining <= 0) {
+      setOptionState("morning", true, " — Complet");
+    } else {
+      setOptionState("morning", false, ` — ${m.remaining} place(s)`);
+    }
+
+    // après-midi
+    if (!a.open) {
+      setOptionState("afternoon", true, " — Fermé");
+    } else if (a.remaining <= 0) {
+      setOptionState("afternoon", true, " — Complet");
+    } else {
+      setOptionState("afternoon", false, ` — ${a.remaining} place(s)`);
+    }
+
+    const anyOpen = (m.open && m.remaining > 0) || (a.open && a.remaining > 0);
+
+    setSlotInfo(
+      anyOpen
+        ? `Disponibilités — Matin: ${m.remaining}/${m.quota} | Après-midi: ${a.remaining}/${a.quota}`
+        : "Journée non disponible (fermée ou complète)."
+    );
+  } catch (e) {
+    console.error(e);
+    setPayEnabled(false);
+    setSlotInfo(e.message || "Erreur de chargement des disponibilités.", true);
+  }
+}
+
+function onSlotChange() {
+  const v = slotSelect?.value;
+  if (!v) {
+    setPayEnabled(false);
+    return;
   }
 
-  if (afternoonOpt) {
-    afternoonOpt.disabled = afternoonRemaining <= 0;
-    afternoonOpt.textContent =
-      afternoonRemaining > 0
-        ? `Après-midi (reste ${afternoonRemaining})`
-        : `Après-midi (complet)`;
-  }
-
-  if (
-    (slotSelect.value === "morning" && morningRemaining <= 0) ||
-    (slotSelect.value === "afternoon" && afternoonRemaining <= 0)
-  ) {
+  // ✅ Empêche de valider un créneau désactivé
+  const opt = [...slotSelect.options].find((o) => o.value === v);
+  if (opt?.disabled) {
     slotSelect.value = "";
+    setPayEnabled(false);
+    setSlotInfo("Ce créneau n'est pas disponible.", true);
+    return;
   }
 
-  setSlotInfo(
-    `Disponibilités — Matin: ${morningRemaining}/${av.slots.morning.max} | Après-midi: ${afternoonRemaining}/${av.slots.afternoon.max}`
-  );
+  setPayEnabled(true);
 }
 
 // ---------------- COLLECT DATA ----------------
@@ -176,7 +262,6 @@ function collectReservationData() {
   };
 }
 
-
 // ---------------- STRIPE ----------------
 async function createCheckoutSession(payload) {
   const res = await fetch(`${API_BASE}/payments/create-checkout-session`, {
@@ -190,67 +275,70 @@ async function createCheckoutSession(payload) {
   return data;
 }
 
-// ---------------- EVENTS ----------------
+// ---------------- INIT ----------------
 document.addEventListener("DOMContentLoaded", () => {
-  const formationSelect = document.getElementById("formation-select");
-  const dateInput = document.getElementById("date");
-  const form = document.getElementById("reservationForm");
+  // min date = today (bloque dates passées)
+  if (dateInput) dateInput.min = todayISO();
 
-  // Quand la personne change manuellement la formation dans la liste
+  // init formation
+  const formationSelect = document.getElementById("formation-select");
   formationSelect?.addEventListener("change", updateFormationFields);
 
-  // 1) On essaie de pré-remplir depuis l'URL (formations.html / promo.html)
   const filledFromUrl = initFromUrl();
+  if (!filledFromUrl) updateFormationFields();
 
-  // 2) Si pas de paramètres d'URL, on initialise avec la valeur du select
-  if (!filledFromUrl) {
-    updateFormationFields();
-  }
+  // events
+  dateInput?.addEventListener("change", onDateChange);
+  slotSelect?.addEventListener("change", onSlotChange);
 
-  // 3) Disponibilités par date
-  dateInput?.addEventListener("change", async () => {
-    if (!dateInput.value) return;
-    setSlotInfo("Chargement des disponibilités...");
-    try {
-      const av = await fetchAvailability(dateInput.value);
-      applyAvailabilityToUI(av);
-    } catch (e) {
-      setSlotInfo(e.message, true);
-    }
-  });
-
-  // 4) Submit -> Stripe
+  // submit
+  const form = document.getElementById("reservationForm");
   form?.addEventListener("submit", async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const payload = collectReservationData();
+    const payload = collectReservationData();
 
-  // ✅ Calcul du dateRange AVANT l'envoi
-  const days = getFormationDays();
-  const dateRange = (payload.date && days) ? getDateRange(payload.date, days) : [];
-  payload.dateRange = dateRange;
+    // dateRange basé sur data-days
+    const days = getFormationDays();
+    payload.dateRange = (payload.date && days) ? getDateRange(payload.date, days) : [];
 
-  // ✅ AJOUTE ICI (temporaire)
-  const formationSelect = document.getElementById("formation-select");
-  console.log("selectedIndex =", formationSelect?.selectedIndex);
-  console.log("selected value =", formationSelect?.value);
-  console.log("days =", days);
-  console.log("dateRange length =", payload.dateRange.length);
-  console.log("dateRange =", payload.dateRange);
-  console.log("payload envoyé =", payload);
+    if (!payload.date || !payload.slot) return alert("Choisis une date et un créneau.");
+    if (!payload.customer.name || !payload.customer.email || !payload.customer.phone)
+      return alert("Complète nom, email et téléphone.");
+    if (!payload.formation || !payload.totalPriceEUR)
+      return alert("Choisis une formation.");
 
-  if (!payload.date || !payload.slot)
-    return alert("Choisis une date et un créneau.");
-  if (!payload.customer.name || !payload.customer.email || !payload.customer.phone)
-    return alert("Complète nom, email et téléphone.");
-  if (!payload.formation || !payload.totalPriceEUR)
-    return alert("Choisis une formation.");
+    // 🔒 Vérification finale: date/créneau encore dispo (anti-triche + anti-changement)
+    try {
+      const av = await fetchAvailability(payload.date);
 
-  try {
-    const { url } = await createCheckoutSession(payload);
-    window.location.href = url;
-  } catch (err) {
-    alert(err.message || "Erreur paiement Stripe");
-  }
+      if (isDayBlocked(av)) {
+        alert("⛔ Cette date est bloquée par l'administration. Choisis une autre date.");
+        return;
+      }
+
+      const m = av.slots.morning;
+      const a = av.slots.afternoon;
+
+      const ok =
+        (payload.slot === "morning" && m.open && m.remaining > 0) ||
+        (payload.slot === "afternoon" && a.open && a.remaining > 0);
+
+      if (!ok) {
+        alert("❌ Ce créneau n'est plus disponible. Choisis un autre créneau/date.");
+        return;
+      }
+    } catch (e) {
+      alert("Erreur de vérification des disponibilités. Réessaie.");
+      return;
+    }
+
+    // ✅ Stripe
+    try {
+      const { url } = await createCheckoutSession(payload);
+      window.location.href = url;
+    } catch (err) {
+      alert(err.message || "Erreur paiement Stripe");
+    }
   });
 });

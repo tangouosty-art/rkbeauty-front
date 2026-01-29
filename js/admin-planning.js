@@ -3,143 +3,143 @@ import { CONFIG } from "./config.js"; // votre config exporte CONFIG :contentRef
 
 const API_BASE = CONFIG.API_BASE || "https://rkbeauty-api.onrender.com";
 
+const el = (id) => document.getElementById(id);
 
-function qs(id){ return document.getElementById(id); }
+const adminToken = el("adminToken");
+const typeSel = el("type");
+const dateInp = el("date");
 
-function showStatus(msg, kind="ok"){
-  const el = qs("status");
-  el.textContent = msg;
-  el.classList.remove("ok","err");
-  el.classList.add(kind === "err" ? "err" : "ok");
+const morningOpen = el("morningOpen");
+const morningQuota = el("morningQuota");
+const afternoonOpen = el("afternoonOpen");
+const afternoonQuota = el("afternoonQuota");
+
+const status = el("status");
+const loadBtn = el("loadBtn");
+const saveBtn = el("saveBtn");
+const blockDayBtn = el("blockDayBtn");
+const resetBtn = el("resetBtn");
+
+function badge(text, ok = true) {
+  status.textContent = text;
+  status.className = "badge " + (ok ? "ok" : "err");
 }
 
-function getToken(){
-  const t = qs("adminToken").value.trim();
-  if(!t) throw new Error("Token admin manquant.");
-  return t;
-}
-
-function getDate(){
-  const d = qs("date").value;
-  if(!d) throw new Error("Date manquante.");
-  return d;
-}
-
-function getType(){
-  const t = qs("type").value;
-  if(t !== "service" && t !== "formation") throw new Error("Type invalide.");
-  return t;
-}
-
-function applyToUI(data){
-  qs("morningOpen").checked = !!data?.morning?.open;
-  qs("afternoonOpen").checked = !!data?.afternoon?.open;
-  qs("morningQuota").value = String(data?.morning?.quota ?? 8);
-  qs("afternoonQuota").value = String(data?.afternoon?.quota ?? 8);
-}
-
-function payloadFromUI(){
-  const mQuota = Number(qs("morningQuota").value);
-  const aQuota = Number(qs("afternoonQuota").value);
-  if(!Number.isFinite(mQuota) || mQuota < 0) throw new Error("Quota matin invalide.");
-  if(!Number.isFinite(aQuota) || aQuota < 0) throw new Error("Quota après-midi invalide.");
-
+function getHeaders() {
+  const t = (adminToken.value || "").trim();
   return {
-    morning: { open: !!qs("morningOpen").checked, quota: mQuota },
-    afternoon: { open: !!qs("afternoonOpen").checked, quota: aQuota }
+    "Content-Type": "application/json",
+    "x-admin-token": t,
   };
 }
 
-async function apiGet(date, type, token){
-  const url = `${API_BASE}/admin/schedule?date=${encodeURIComponent(date)}&type=${encodeURIComponent(type)}`;
-  const res = await fetch(url, { headers: { "x-admin-token": token } });
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error(data.message || "Erreur chargement admin");
+function getQuery() {
+  const date = dateInp.value;
+  const type = typeSel.value;
+  if (!date) throw new Error("Choisis une date");
+  if (!type) throw new Error("Choisis un type");
+  return { date, type };
+}
+
+function toInt(v) {
+  const n = Number(String(v).trim());
+  if (!Number.isFinite(n) || n < 0) throw new Error("Quota invalide");
+  return Math.floor(n);
+}
+
+async function apiGetSchedule() {
+  const { date, type } = getQuery();
+  const res = await fetch(`${API_BASE}/admin/schedule?date=${encodeURIComponent(date)}&type=${encodeURIComponent(type)}`, {
+    method: "GET",
+    headers: getHeaders(),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `Erreur GET (${res.status})`);
   return data;
 }
 
-async function apiPut(date, type, token, payload){
-  const url = `${API_BASE}/admin/schedule?date=${encodeURIComponent(date)}&type=${encodeURIComponent(type)}`;
-  const res = await fetch(url, {
+async function apiPutSchedule(payload) {
+  const { date, type } = getQuery();
+  const res = await fetch(`${API_BASE}/admin/schedule?date=${encodeURIComponent(date)}&type=${encodeURIComponent(type)}`, {
     method: "PUT",
-    headers: { "Content-Type":"application/json", "x-admin-token": token },
-    body: JSON.stringify(payload)
+    headers: getHeaders(),
+    body: JSON.stringify(payload),
   });
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error(data.message || "Erreur enregistrement admin");
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `Erreur PUT (${res.status})`);
   return data;
 }
 
-async function apiDelete(date, type, token){
-  const url = `${API_BASE}/admin/schedule?date=${encodeURIComponent(date)}&type=${encodeURIComponent(type)}`;
-  const res = await fetch(url, { method: "DELETE", headers: { "x-admin-token": token } });
-  const data = await res.json().catch(()=> ({}));
-  if(!res.ok) throw new Error(data.message || "Erreur reset admin");
+async function apiDeleteSchedule() {
+  const { date, type } = getQuery();
+  const res = await fetch(`${API_BASE}/admin/schedule?date=${encodeURIComponent(date)}&type=${encodeURIComponent(type)}`, {
+    method: "DELETE",
+    headers: getHeaders(),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || `Erreur DELETE (${res.status})`);
   return data;
 }
 
-document.addEventListener("DOMContentLoaded", ()=>{
-  // date par défaut = aujourd’hui
-  const now = new Date();
-  qs("date").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+loadBtn.addEventListener("click", async () => {
+  try {
+    badge("Chargement...");
+    const s = await apiGetSchedule();
 
-  // defaults UI
-  qs("morningOpen").checked = true;
-  qs("afternoonOpen").checked = true;
+    // backend renvoie: { morning:{open,quota}, afternoon:{open,quota} }
+    morningOpen.checked = !!s.morning.open;
+    morningQuota.value = String(s.morning.quota);
 
-  qs("loadBtn").addEventListener("click", async ()=>{
-    try{
-      showStatus("Chargement...", "ok");
-      const token = getToken();
-      const date = getDate();
-      const type = getType();
-      const data = await apiGet(date, type, token);
-      applyToUI(data);
-      showStatus("Planning chargé.", "ok");
-    }catch(e){
-      showStatus(e.message || String(e), "err");
-    }
-  });
+    afternoonOpen.checked = !!s.afternoon.open;
+    afternoonQuota.value = String(s.afternoon.quota);
 
-  qs("saveBtn").addEventListener("click", async ()=>{
-    try{
-      showStatus("Enregistrement...", "ok");
-      const token = getToken();
-      const date = getDate();
-      const type = getType();
-      const payload = payloadFromUI();
-      await apiPut(date, type, token, payload);
-      showStatus("Enregistré.", "ok");
-    }catch(e){
-      showStatus(e.message || String(e), "err");
-    }
-  });
+    badge("Chargé ✅", true);
+  } catch (e) {
+    console.error(e);
+    badge(e.message || "Erreur chargement", false);
+  }
+});
 
-  qs("blockDayBtn").addEventListener("click", ()=>{
-    qs("morningOpen").checked = false;
-    qs("afternoonOpen").checked = false;
-    qs("morningQuota").value = "0";
-    qs("afternoonQuota").value = "0";
-    showStatus("Journée bloquée (0 quota + fermé).", "ok");
-  });
+saveBtn.addEventListener("click", async () => {
+  try {
+    badge("Enregistrement...");
+    const payload = {
+      morning: { open: morningOpen.checked, quota: toInt(morningQuota.value) },
+      afternoon: { open: afternoonOpen.checked, quota: toInt(afternoonQuota.value) },
+    };
+    await apiPutSchedule(payload);
+    badge("Enregistré ✅", true);
+  } catch (e) {
+    console.error(e);
+    badge(e.message || "Erreur enregistrement", false);
+  }
+});
 
-  qs("resetBtn").addEventListener("click", async ()=>{
-    try{
-      showStatus("Réinitialisation...", "ok");
-      const token = getToken();
-      const date = getDate();
-      const type = getType();
-      await apiDelete(date, type, token);
+blockDayBtn.addEventListener("click", async () => {
+  try {
+    badge("Blocage journée...");
+    const payload = {
+      morning: { open: false, quota: 0 },
+      afternoon: { open: false, quota: 0 },
+    };
+    await apiPutSchedule(payload);
+    // sync UI
+    morningOpen.checked = false; morningQuota.value = "0";
+    afternoonOpen.checked = false; afternoonQuota.value = "0";
+    badge("Journée bloquée ✅", true);
+  } catch (e) {
+    console.error(e);
+    badge(e.message || "Erreur blocage", false);
+  }
+});
 
-      // Remet valeurs par défaut UI (sans overrides)
-      qs("morningOpen").checked = true;
-      qs("afternoonOpen").checked = true;
-      qs("morningQuota").value = "8";
-      qs("afternoonQuota").value = "8";
-
-      showStatus("Overrides supprimés (valeurs par défaut).", "ok");
-    }catch(e){
-      showStatus(e.message || String(e), "err");
-    }
-  });
+resetBtn.addEventListener("click", async () => {
+  try {
+    badge("Réinitialisation...");
+    await apiDeleteSchedule();
+    badge("Réinitialisé ✅ (overrides supprimés)", true);
+  } catch (e) {
+    console.error(e);
+    badge(e.message || "Erreur reset", false);
+  }
 });

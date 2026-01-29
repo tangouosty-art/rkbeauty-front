@@ -54,6 +54,35 @@ function initFadeIn() {
   });
 }
 
+// ===== KIT MODAL =====
+(function () {
+  const modal = document.getElementById("kitModal");
+  if (!modal) return;
+
+  const openButtons = document.querySelectorAll("[data-open-kit]");
+  const closeTargets = modal.querySelectorAll("[data-close-kit]");
+
+  function openModal() {
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeModal() {
+    modal.classList.remove("is-open");
+    modal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+  }
+
+  openButtons.forEach(btn => btn.addEventListener("click", openModal));
+  closeTargets.forEach(el => el.addEventListener("click", closeModal));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+  });
+})();
+
+
 // Init global
 initBurgerMenu();
 initScrollTop();
