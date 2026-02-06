@@ -82,6 +82,30 @@ function initFadeIn() {
   });
 })();
 
+// ===== CGV MODAL =====
+(function () {
+  const modal = document.getElementById("cgvModal");
+  const openBtn = document.getElementById("openCGV");
+  const closeEls = document.querySelectorAll("[data-close-cgv]");
+
+  if (!modal || !openBtn) return;
+
+  openBtn.addEventListener("click", () => {
+    modal.classList.add("active");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+  });
+
+  closeEls.forEach(el =>
+    el.addEventListener("click", () => {
+      modal.classList.remove("active");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.style.overflow = "";
+    })
+  );
+})();
+
+
 
 // Init global
 initBurgerMenu();

@@ -5,4 +5,3 @@ export const CONFIG = {
   QUOTA_MAX_MORNING: 6,
   QUOTA_MAX_AFTERNOON: 6,
 };
-

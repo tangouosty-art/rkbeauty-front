@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="robots" content="noindex, nofollow" />
-  <title>RKbeauty — Admin Planning</title>
+  <title>RKbeauty — Admin</title>
   <link rel="stylesheet" href="css/style.css" />
 
   <style>
@@ -51,9 +51,11 @@
       letter-spacing: 2px;
       font-weight: 600;
     }
+    .btn-ghost:hover { border-color: var(--primary-gold); }
 
     .panel { margin-top: 18px; padding: 16px; background: var(--cream); border-left: 4px solid var(--primary-gold); }
     .panel h3 { margin-bottom: 10px; font-size: 1.2rem; }
+
     .slot-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     @media (max-width: 760px){ .slot-grid{ grid-template-columns: 1fr; } }
 
@@ -63,6 +65,12 @@
     .badge { display:none; padding: 8px 12px; border: 1px solid rgba(201,169,97,.55); }
     .ok { display:inline-block; color:#1b5e20; border-color:#1b5e20; }
     .err { display:inline-block; color:#b00020; border-color:#b00020; }
+
+    /* Table */
+    .table { width:100%; border-collapse: collapse; margin-top: 10px; }
+    .table th { background: #faf7f0; border-bottom: 2px solid #e0e0e0; padding: 10px; text-align:left; }
+    .table td { border-bottom: 1px solid #eee; padding: 10px; vertical-align: top; }
+    .table input, .table select { width:100%; padding: 10px; }
   </style>
 </head>
 
@@ -72,6 +80,7 @@
       <h1 class="admin-title">Admin — Planning</h1>
       <p class="admin-sub">Gérer les quotas et blocages par type (Service / Formation).</p>
 
+      <!-- HEADER INPUTS -->
       <div class="grid">
         <div>
           <label for="adminToken">Token admin</label>
@@ -92,8 +101,10 @@
         </div>
       </div>
 
+      <!-- PLANNING PANEL -->
       <div class="panel">
         <h3>Créneaux</h3>
+
         <div class="slot-grid">
           <div class="slot-card">
             <div class="slot-row">
@@ -119,7 +130,7 @@
             </div>
             <div style="margin-top:10px;">
               <label for="afternoonQuota">Quota après-midi</label>
-              <input id="afternoonQuota" class="form-control" type="number" min="0" step="1" value="6 " />
+              <input id="afternoonQuota" class="form-control" type="number" min="0" step="1" value="6" />
             </div>
           </div>
         </div>
@@ -129,13 +140,117 @@
           <button class="btn-admin" id="saveBtn" type="button">Enregistrer</button>
           <button class="btn-ghost" id="blockDayBtn" type="button">Bloquer la journée</button>
           <button class="btn-ghost" id="resetBtn" type="button">Réinitialiser</button>
-
           <span id="status" class="badge"></span>
         </div>
       </div>
+
+      <hr style="margin:24px 0;">
+
+      <!-- SESSIONS FORMATIONS -->
+      <section class="admin-card" style="padding: 20px;">
+        <h2 class="admin-title" style="font-size:1.4rem; margin-bottom:6px;">📅 Sessions Formations</h2>
+        <p class="admin-sub">Associer des dates à chaque formation + gérer les places.</p>
+
+        <div class="row" style="gap:12px;">
+          <div style="min-width:220px;">
+            <label>Formation</label>
+            <select id="fsFormationCode" class="form-control">
+              <option value="">-- Choisir --</option>
+              <option value="F2J-150">F2J-150 (2 jours - 150€)</option>
+              <option value="F2J-100">F2J-100 (2 jours - 100€)</option>
+              <option value="F4J-200">F4J-200 (4 jours - 200€)</option>
+              <option value="F4J-250">F4J-250 (4 jours - 250€)</option>
+              <option value="F7J-300">F7J-300 (7 jours - 300€)</option>
+              <option value="F7J-350">F7J-350 (7 jours - 350€)</option>
+              <option value="F2S-600">F2S-600 (14 jours - 600€)</option>
+              <option value="F2S-650">F2S-650 (14 jours - 650€)</option>
+              <option value="F4S-1300">F4S-1300 (28 jours - 1300€)</option>
+              <option value="P7J-250">P7J-250 (Promo 7 jours - 250€)</option>
+              <option value="P2S-350">P2S-350 (Promo 14 jours - 350€)</option>
+            </select>
+          </div>
+
+          <div style="min-width:220px;">
+            <label>Libellé</label>
+            <input id="fsLabel" class="form-control" type="text" placeholder="ex: Formation 2 jours" />
+          </div>
+
+          <div style="min-width:140px;">
+            <label>Prix (€)</label>
+            <input id="fsPrice" class="form-control" type="number" min="0" step="1" />
+          </div>
+
+          <div style="min-width:140px;">
+            <label>Durée (jours)</label>
+            <input id="fsDays" class="form-control" type="number" min="1" max="60" />
+          </div>
+
+          <div style="min-width:190px;">
+            <label>Date début</label>
+            <input id="fsStartDate" class="form-control" type="date" />
+          </div>
+
+          <div style="min-width:160px;">
+            <label>Places</label>
+            <input id="fsCapacity" class="form-control" type="number" min="1" step="1" value="1" />
+          </div>
+
+          <div style="min-width:180px;">
+            <label>Créneau</label>
+            <select id="fsSlotPolicy" class="form-control">
+              <option value="both">Matin ou Après-midi</option>
+              <option value="morning">Matin seulement</option>
+              <option value="afternoon">Après-midi seulement</option>
+            </select>
+          </div>
+
+          <div style="min-width:180px;">
+            <label>Statut</label>
+            <select id="fsStatus" class="form-control">
+              <option value="draft">Brouillon</option>
+              <option value="published">Publié</option>
+              <option value="closed">Fermé</option>
+            </select>
+          </div>
+
+          <div style="min-width:260px; flex:1;">
+            <label>Note</label>
+            <input id="fsNote" class="form-control" type="text" placeholder="Optionnel" />
+          </div>
+        </div>
+
+        <div class="row">
+          <button id="fsCreateBtn" class="btn-admin" type="button">➕ Créer la session</button>
+          <button id="fsReloadBtn" class="btn-ghost" type="button">🔄 Recharger la liste</button>
+          <span id="fsStatusMsg" class="badge"></span>
+        </div>
+
+        <div style="margin-top:16px; overflow:auto;">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Code</th>
+                <th>Début</th>
+                <th>Jours</th>
+                <th>Places</th>
+                <th>Reserved</th>
+                <th>Holds</th>
+                <th>Remaining</th>
+                <th>Statut</th>
+                <th>Note</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="fsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </main>
 
+  <!-- JS -->
   <script type="module" src="js/admin-planning.js"></script>
+  <script type="module" src="js/admin-sessions.js"></script>
 </body>
 </html>

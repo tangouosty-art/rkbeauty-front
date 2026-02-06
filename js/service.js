@@ -348,6 +348,13 @@ elMaquillage.addEventListener("change", () => updatePricesFromSelect());
 
 elForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const cgvCheckbox = document.getElementById("acceptCGV");
+
+  if (!cgvCheckbox || !cgvCheckbox.checked) {
+    alert("Veuillez accepter les Conditions Générales de Vente avant de continuer.");
+    return;
+  }
+
 
   const v = validateStep2();
   if (!v.ok) {

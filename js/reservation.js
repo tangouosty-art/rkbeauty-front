@@ -1,19 +1,51 @@
 import { CONFIG } from "./config.js";
 const API_BASE = CONFIG.API_BASE;
 
+// ---------------- API helpers ----------------
+async function apiGet(path) {
+  const res = await fetch(`${API_BASE}${path}`);
+  const text = await res.text();
+  let data = null;
+  try { data = text ? JSON.parse(text) : null; } catch {}
+  if (!res.ok) throw new Error(data?.message || `Erreur HTTP ${res.status}`);
+  return data;
+}
+
+async function apiPost(path, payload) {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", 
+    "x-test-token": localStorage.getItem("testToken") || "" },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || "Erreur");
+  return data;
+}
+
+function fmtDateFR(yyyyMMdd) {
+  const [y, m, d] = String(yyyyMMdd).slice(0, 10).split("-");
+  return `${d}/${m}/${y}`;
+}
+
+function setHelp(msg, ok = true) {
+  const el = document.getElementById("session-help");
+  if (!el) return;
+  el.textContent = msg || "";
+  el.style.color = ok ? "" : "crimson";
+}
+
 // ---------------- DOM ----------------
-const dateInput = document.getElementById("date");
+const formationSelect = document.getElementById("formation-select");
+const sessionSelect = document.getElementById("session-select");
+
 const slotSelect = document.getElementById("slot");
 const slotInfo = document.getElementById("slotInfo");
 const payBtn = document.getElementById("payBtn");
 
-// ---------------- HELPERS ----------------
-function todayISO() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
+// ---------------- UI helpers ----------------
+function setPayEnabled(enabled) {
+  if (payBtn) payBtn.disabled = !enabled;
 }
 
 function setSlotInfo(text, isError = false) {
@@ -22,198 +54,143 @@ function setSlotInfo(text, isError = false) {
   slotInfo.style.color = isError ? "crimson" : "";
 }
 
-function setPayEnabled(enabled) {
-  if (payBtn) payBtn.disabled = !enabled;
-}
-
-function resetSlotUI() {
+function resetSlots() {
   if (!slotSelect) return;
+  const optMorning = slotSelect.querySelector('option[value="morning"]');
+  const optAfternoon = slotSelect.querySelector('option[value="afternoon"]');
 
-  // remettre les options à leur texte de base
-  const morningOpt = [...slotSelect.options].find((o) => o.value === "morning");
-  const afternoonOpt = [...slotSelect.options].find((o) => o.value === "afternoon");
-
-  if (morningOpt) {
-    morningOpt.disabled = false;
-    morningOpt.textContent = "Matin de 11h à 14h";
-  }
-  if (afternoonOpt) {
-    afternoonOpt.disabled = false;
-    afternoonOpt.textContent = "Après-midi de 16h à 20h";
-  }
+  if (optMorning) optMorning.disabled = false;
+  if (optAfternoon) optAfternoon.disabled = false;
 
   slotSelect.value = "";
   setPayEnabled(false);
+  setSlotInfo("");
 }
 
-function setOptionState(value, disabled, labelSuffix = "") {
+function applySlotPolicy(slotPolicy) {
   if (!slotSelect) return;
-  const opt = [...slotSelect.options].find((o) => o.value === value);
-  if (!opt) return;
 
-  opt.disabled = !!disabled;
-  opt.textContent =
-    value === "morning"
-      ? `Matin de 11h à 14h${labelSuffix}`
-      : `Après-midi de 16h à 20h${labelSuffix}`;
+  const optMorning = slotSelect.querySelector('option[value="morning"]');
+  const optAfternoon = slotSelect.querySelector('option[value="afternoon"]');
+
+  // reset
+  if (optMorning) optMorning.disabled = false;
+  if (optAfternoon) optAfternoon.disabled = false;
+
+  if (slotPolicy === "morning") {
+    if (optAfternoon) optAfternoon.disabled = true;
+    slotSelect.value = "morning";
+    setPayEnabled(true);
+    return;
+  }
+
+  if (slotPolicy === "afternoon") {
+    if (optMorning) optMorning.disabled = true;
+    slotSelect.value = "afternoon";
+    setPayEnabled(true);
+    return;
+  }
+
+  // both
+  if (!["morning", "afternoon"].includes(slotSelect.value)) slotSelect.value = "";
+  setPayEnabled(false);
 }
 
-// ---------------- FORMATION ----------------
+// ---------------- FORMATION fields ----------------
 function updateFormationFields() {
-  const select = document.getElementById("formation-select");
   const formationInput = document.getElementById("formation");
   const prixInput = document.getElementById("prix");
-  if (!select || !formationInput || !prixInput) return;
+  if (!formationSelect || !formationInput || !prixInput) return;
 
-  const opt = select.options[select.selectedIndex];
-  const formation = select.value || "";
+  const opt = formationSelect.options[formationSelect.selectedIndex];
+  const code = formationSelect.value || "";
   const price = opt?.dataset?.prix ? String(opt.dataset.prix) : "";
 
-  formationInput.value = formation;
+  formationInput.value = code;
   prixInput.value = price ? `${price}€` : "0€";
 }
 
-function initFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const qFormation = params.get("formation");
-  const qPrix = params.get("prix");
+// ---------------- Sessions loading ----------------
+async function loadSessionsForFormationCode(code) {
+  if (!sessionSelect) return;
 
-  const formationInput = document.getElementById("formation");
-  const prixInput = document.getElementById("prix");
-  const select = document.getElementById("formation-select");
+  sessionSelect.innerHTML = `<option value="">Chargement...</option>`;
+  setHelp("");
+  resetSlots();
+  setSlotInfo("");
 
-  let used = false;
+  if (!code) {
+    sessionSelect.innerHTML = `<option value="">— Sélectionnez une formation d’abord —</option>`;
+    return;
+  }
 
-  if (qFormation && select) {
-    const match = Array.from(select.options).find(
-      (opt) => opt.value.trim().toLowerCase() === qFormation.trim().toLowerCase()
+  const sessions = await apiGet(`/formation-sessions?formation_code=${encodeURIComponent(code)}`);
+
+  if (!Array.isArray(sessions) || sessions.length === 0) {
+    sessionSelect.innerHTML = `<option value="">Aucune session disponible</option>`;
+    setHelp(
+      "La session de cette formation n’est pas encore disponible. Sélectionnez une autre formation.",
+      false
     );
-    if (match) {
-      select.value = match.value;
-      updateFormationFields();
-      used = true;
-    }
+    return;
   }
 
-  if (qFormation && !used && formationInput) {
-    formationInput.value = qFormation;
-    used = true;
-  }
+  sessionSelect.innerHTML =
+    `<option value="">— Choisir une date —</option>` +
+    sessions
+      .map((s) => {
+        const label = `${fmtDateFR(s.start_date)} (${s.remaining} place(s) restante(s))`;
+        return `
+          <option
+            value="${s.id}"
+            data-start="${s.start_date}"
+            data-slot-policy="${s.slot_policy}"
+            data-remaining="${s.remaining}"
+          >${label}</option>
+        `;
+      })
+      .join("");
 
-  if (qPrix && prixInput) {
-    prixInput.value = qPrix.replace("€", "").trim() + "€";
-    used = true;
-  }
-
-  return used;
+  setHelp("Choisis une date proposée par RKbeauty (session).");
 }
 
-function getFormationDays() {
-  const select = document.getElementById("formation-select");
-  if (!select) return 1;
-  const opt = select.options[select.selectedIndex];
-  return opt?.dataset?.days ? Number(opt.dataset.days) : 1;
-}
-
-function getDateRange(startDate, days) {
-  const dates = [];
-  const d = new Date(startDate + "T00:00:00");
-
-  for (let i = 0; i < days; i++) {
-    const tmp = new Date(d);
-    tmp.setDate(d.getDate() + i);
-    dates.push(tmp.toISOString().slice(0, 10));
-  }
-  return dates;
-}
-
-// ---------------- AVAILABILITY (FORMATION) ----------------
-async function fetchAvailability(date) {
-  const res = await fetch(
-    `${API_BASE}/availability?date=${encodeURIComponent(date)}&type=formation`
-  );
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "Erreur disponibilité");
-  return data;
-}
-
-// ✅ détecte si la date est bloquée admin (supporte plusieurs formats)
-function isDayBlocked(av) {
-  // 1) si ton backend renvoie explicitement blocked: true
-  if (av?.blocked === true) return true;
-
-  // 2) si le backend gère le blocage via open=false sur les 2 slots
-  const mOpen = av?.slots?.morning?.open;
-  const aOpen = av?.slots?.afternoon?.open;
-  if (mOpen === false && aOpen === false) return true;
-
-  return false;
-}
-
-async function onDateChange() {
-  const date = dateInput?.value;
-  if (!date) return;
-
-  resetSlotUI();
-  setSlotInfo("Chargement des disponibilités...");
-
+// ---------------- Events ----------------
+formationSelect?.addEventListener("change", async () => {
+  updateFormationFields();
   try {
-    const av = await fetchAvailability(date);
-
-    // ✅ Date bloquée par l'admin : on stop tout ici
-    if (isDayBlocked(av)) {
-      setOptionState("morning", true, " — Bloqué");
-      setOptionState("afternoon", true, " — Bloqué");
-      setPayEnabled(false);
-      setSlotInfo("⛔ Cette date est bloquée par l'administration. Choisis une autre date.", true);
-      return;
-    }
-
-    const m = av.slots.morning;
-    const a = av.slots.afternoon;
-
-    // matin
-    if (!m.open) {
-      setOptionState("morning", true, " — Fermé");
-    } else if (m.remaining <= 0) {
-      setOptionState("morning", true, " — Complet");
-    } else {
-      setOptionState("morning", false, ` — ${m.remaining} place(s)`);
-    }
-
-    // après-midi
-    if (!a.open) {
-      setOptionState("afternoon", true, " — Fermé");
-    } else if (a.remaining <= 0) {
-      setOptionState("afternoon", true, " — Complet");
-    } else {
-      setOptionState("afternoon", false, ` — ${a.remaining} place(s)`);
-    }
-
-    const anyOpen = (m.open && m.remaining > 0) || (a.open && a.remaining > 0);
-
-    setSlotInfo(
-      anyOpen
-        ? `Disponibilités — Matin: ${m.remaining}/${m.quota} | Après-midi: ${a.remaining}/${a.quota}`
-        : "Journée non disponible (fermée ou complète)."
-    );
+    await loadSessionsForFormationCode(formationSelect.value);
   } catch (e) {
     console.error(e);
-    setPayEnabled(false);
-    setSlotInfo(e.message || "Erreur de chargement des disponibilités.", true);
+    setHelp(e.message || "Erreur chargement sessions", false);
   }
-}
+});
 
-function onSlotChange() {
-  const v = slotSelect?.value;
-  if (!v) {
+sessionSelect?.addEventListener("change", () => {
+  resetSlots();
+
+  const opt = sessionSelect.options[sessionSelect.selectedIndex];
+  const policy = opt?.dataset?.slotPolicy || "both";
+  const remaining = opt?.dataset?.remaining;
+
+  if (!sessionSelect.value) {
+    setSlotInfo("");
     setPayEnabled(false);
     return;
   }
 
-  // ✅ Empêche de valider un créneau désactivé
-  const opt = [...slotSelect.options].find((o) => o.value === v);
-  if (opt?.disabled) {
+  applySlotPolicy(policy);
+
+  if (remaining != null) {
+    setSlotInfo(`Places restantes pour cette session : ${remaining}`);
+  }
+});
+
+slotSelect?.addEventListener("change", () => {
+  const v = slotSelect.value;
+
+  // empêche de choisir option disabled
+  const opt = slotSelect.querySelector(`option[value="${v}"]`);
+  if (!v || opt?.disabled) {
     slotSelect.value = "";
     setPayEnabled(false);
     setSlotInfo("Ce créneau n'est pas disponible.", true);
@@ -221,124 +198,110 @@ function onSlotChange() {
   }
 
   setPayEnabled(true);
-}
+});
 
-// ---------------- COLLECT DATA ----------------
-function collectReservationData() {
+// ---------------- Collect + submit ----------------
+function collectReservationPayload() {
   const name = document.getElementById("nom")?.value.trim();
   const email = document.getElementById("email")?.value.trim();
   const phone = document.getElementById("telephone")?.value.trim();
 
-  const date = document.getElementById("date")?.value;
-  const slot = document.getElementById("slot")?.value;
-
-  const formationSelect = document.getElementById("formation-select");
-  const formationInput = document.getElementById("formation");
-  const prixInput = document.getElementById("prix");
-
+  const formationCode = formationSelect?.value?.trim() || "";
   const opt = formationSelect?.options?.[formationSelect.selectedIndex];
 
-  const formation =
-    formationInput?.value.trim() ||
-    formationSelect?.value?.trim() ||
-    "";
+  const formationLabel = opt?.textContent?.trim() || formationCode;
+  const totalPriceEUR = opt?.dataset?.prix
+    ? String(opt.dataset.prix)
+    : (document.getElementById("prix")?.value || "").replace("€", "").replace(",", ".").trim();
 
-  let totalPriceEUR = "";
-  if (opt?.dataset?.prix) {
-    totalPriceEUR = String(opt.dataset.prix);
-  } else if (prixInput?.value) {
-    totalPriceEUR = prixInput.value.replace("€", "").replace(",", ".").trim();
-  }
+  const slot = slotSelect?.value || "";
+  const sessionId = Number(sessionSelect?.value);
 
   const message = document.getElementById("message")?.value?.trim() || "";
 
   return {
-    date,
+    formation_session_id: sessionId,
     slot,
     customer: { name, email, phone },
-    formation,
+    formation: formationLabel,
     totalPriceEUR,
     message,
   };
 }
 
-// ---------------- STRIPE ----------------
-async function createCheckoutSession(payload) {
-  const res = await fetch(`${API_BASE}/payments/create-checkout-session`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.message || "Erreur création Checkout");
-  return data;
-}
-
-// ---------------- INIT ----------------
 document.addEventListener("DOMContentLoaded", () => {
-  // min date = today (bloque dates passées)
-  if (dateInput) dateInput.min = todayISO();
+  updateFormationFields();
+  resetSlots();
 
-  // init formation
-  const formationSelect = document.getElementById("formation-select");
-  formationSelect?.addEventListener("change", updateFormationFields);
-
-  const filledFromUrl = initFromUrl();
-  if (!filledFromUrl) updateFormationFields();
-
-  // events
-  dateInput?.addEventListener("change", onDateChange);
-  slotSelect?.addEventListener("change", onSlotChange);
-
-  // submit
   const form = document.getElementById("reservationForm");
   form?.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const payload = collectReservationData();
-
-    // dateRange basé sur data-days
-    const days = getFormationDays();
-    payload.dateRange = (payload.date && days) ? getDateRange(payload.date, days) : [];
-
-    if (!payload.date || !payload.slot) return alert("Choisis une date et un créneau.");
-    if (!payload.customer.name || !payload.customer.email || !payload.customer.phone)
-      return alert("Complète nom, email et téléphone.");
-    if (!payload.formation || !payload.totalPriceEUR)
-      return alert("Choisis une formation.");
-
-    // 🔒 Vérification finale: date/créneau encore dispo (anti-triche + anti-changement)
-    try {
-      const av = await fetchAvailability(payload.date);
-
-      if (isDayBlocked(av)) {
-        alert("⛔ Cette date est bloquée par l'administration. Choisis une autre date.");
-        return;
-      }
-
-      const m = av.slots.morning;
-      const a = av.slots.afternoon;
-
-      const ok =
-        (payload.slot === "morning" && m.open && m.remaining > 0) ||
-        (payload.slot === "afternoon" && a.open && a.remaining > 0);
-
-      if (!ok) {
-        alert("❌ Ce créneau n'est plus disponible. Choisis un autre créneau/date.");
-        return;
-      }
-    } catch (e) {
-      alert("Erreur de vérification des disponibilités. Réessaie.");
+    const cgv = document.getElementById("acceptCGV");
+    if (!cgv?.checked) {
+      alert("Vous devez accepter les Conditions Générales de Vente avant de payer.");
       return;
     }
 
-    // ✅ Stripe
+    const payload = collectReservationPayload();
+
+    if (!Number.isFinite(payload.formation_session_id)) {
+      alert("Choisis une date de session.");
+      return;
+    }
+    if (!payload.slot) {
+      alert("Choisis un créneau.");
+      return;
+    }
+    if (!payload.customer.name || !payload.customer.email || !payload.customer.phone) {
+      alert("Complète nom, email et téléphone.");
+      return;
+    }
+    if (!payload.formation || !payload.totalPriceEUR) {
+      alert("Choisis une formation.");
+      return;
+    }
+
     try {
-      const { url } = await createCheckoutSession(payload);
+      const { url } = await apiPost("/payments/create-checkout-session", payload);
       window.location.href = url;
     } catch (err) {
       alert(err.message || "Erreur paiement Stripe");
     }
   });
 });
+
+
+const modal = document.getElementById("legalModal");
+const iframe = document.getElementById("legalIframe");
+const title = document.getElementById("legalModalTitle");
+
+function openLegal(titleText, file) {
+  title.textContent = titleText;
+  iframe.src = file;
+  modal.setAttribute("aria-hidden", "false");
+  modal.style.display = "flex";
+}
+
+function closeLegal() {
+  modal.setAttribute("aria-hidden", "true");
+  modal.style.display = "none";
+  iframe.src = "";
+}
+
+document.getElementById("openCGV")?.addEventListener("click", () => {
+  openLegal("Conditions Générales de Vente", "cgv.html");
+});
+
+document.getElementById("openMentions")?.addEventListener("click", () => {
+  openLegal("Mentions légales", "mentions-legales.html");
+});
+
+document.getElementById("openPrivacy")?.addEventListener("click", () => {
+  openLegal("Politique de confidentialité", "politique-confidentialite.html");
+});
+
+document.querySelectorAll("[data-close-legal]").forEach(el => {
+  el.addEventListener("click", closeLegal);
+});
+
