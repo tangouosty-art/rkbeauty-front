@@ -36,6 +36,30 @@ function setHelp(msg, ok = true) {
   el.style.color = ok ? "" : "crimson";
 }
 
+function applyFormationCodeFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const code = (params.get("formation_code") || "").trim();
+  if (!code) return false;
+
+  const select = document.getElementById("formation-select");
+  if (!select) return false;
+
+  // Cherche l'option qui a value = formation_code
+  const opt = [...select.options].find(o => (o.value || "").trim() === code);
+  if (!opt) return false;
+
+  select.value = opt.value;
+
+  // Met à jour les champs formation/prix (si ta fonction existe)
+  if (typeof updateFormationFields === "function") updateFormationFields();
+
+  // Déclenche le flux normal (chargement sessions, etc.)
+  select.dispatchEvent(new Event("change"));
+
+  return true;
+}
+
+
 // ✅ util date -> YYYY-MM-DD
 function toSQLDate(value) {
   if (!value) return null;
@@ -245,6 +269,9 @@ function collectReservationPayload() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // ✅ préremplissage via ?formation_code=F2J-150
+  applyFormationCodeFromUrl();
+
   updateFormationFields();
   resetSlots();
 

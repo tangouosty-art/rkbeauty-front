@@ -182,11 +182,14 @@ function hookAutoFill() {
   sel?.addEventListener("change", () => {
     const inf = inferFromCode(sel.value);
     if (!inf) return;
-    if (!label.value) label.value = inf.label;
-    if (!price.value) price.value = String(inf.price || "");
-    if (!days.value) days.value = String(inf.days || "");
+
+    // ✅ Toujours mettre à jour quand on change la formation
+    label.value = inf.label || "";
+    price.value = String(inf.price ?? "");
+    days.value = String(inf.days ?? "");
   });
 }
+
 
 function hookTableActions() {
   qs("fsTableBody")?.addEventListener("click", async (e) => {
