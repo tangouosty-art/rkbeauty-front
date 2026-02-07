@@ -14,8 +14,7 @@ async function apiGet(path) {
 async function apiPost(path, payload) {
   const res = await fetch(`${API_BASE}${path}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", 
-    "x-test-token": localStorage.getItem("testToken") || "" },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   const data = await res.json().catch(() => ({}));
