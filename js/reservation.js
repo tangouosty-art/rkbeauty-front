@@ -6,7 +6,9 @@ async function apiGet(path) {
   const res = await fetch(`${API_BASE}${path}`);
   const text = await res.text();
   let data = null;
-  try { data = text ? JSON.parse(text) : null; } catch {}
+  try {
+    data = text ? JSON.parse(text) : null;
+  } catch {}
   if (!res.ok) throw new Error(data?.message || `Erreur HTTP ${res.status}`);
   return data;
 }
@@ -32,6 +34,12 @@ function setHelp(msg, ok = true) {
   if (!el) return;
   el.textContent = msg || "";
   el.style.color = ok ? "" : "crimson";
+}
+
+// ✅ util date -> YYYY-MM-DD
+function toSQLDate(value) {
+  if (!value) return null;
+  return String(value).slice(0, 10);
 }
 
 // ---------------- DOM ----------------
@@ -206,20 +214,28 @@ function collectReservationPayload() {
   const phone = document.getElementById("telephone")?.value.trim();
 
   const formationCode = formationSelect?.value?.trim() || "";
-  const opt = formationSelect?.options?.[formationSelect.selectedIndex];
+  const optFormation = formationSelect?.options?.[formationSelect.selectedIndex];
 
-  const formationLabel = opt?.textContent?.trim() || formationCode;
-  const totalPriceEUR = opt?.dataset?.prix
-    ? String(opt.dataset.prix)
-    : (document.getElementById("prix")?.value || "").replace("€", "").replace(",", ".").trim();
+  const formationLabel = optFormation?.textContent?.trim() || formationCode;
+  const totalPriceEUR = optFormation?.dataset?.prix
+    ? String(optFormation.dataset.prix)
+    : (document.getElementById("prix")?.value || "")
+        .replace("€", "")
+        .replace(",", ".")
+        .trim();
 
   const slot = slotSelect?.value || "";
   const sessionId = Number(sessionSelect?.value);
+
+  // ✅ on récupère la date SQL directement depuis l'option de session
+  const sessionOpt = sessionSelect?.options?.[sessionSelect.selectedIndex];
+  const start_date = sessionOpt?.dataset?.start || ""; // ex: "2026-02-17"
 
   const message = document.getElementById("message")?.value?.trim() || "";
 
   return {
     formation_session_id: sessionId,
+    start_date, // ✅ envoyé au back (format YYYY-MM-DD)
     slot,
     customer: { name, email, phone },
     formation: formationLabel,
@@ -248,6 +264,10 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Choisis une date de session.");
       return;
     }
+    if (!payload.start_date) {
+      alert("Date de session invalide.");
+      return;
+    }
     if (!payload.slot) {
       alert("Choisis un créneau.");
       return;
@@ -261,6 +281,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // ✅ Normalisation blindée (au cas où)
+    payload.start_date = toSQLDate(payload.start_date);
+
     try {
       const { url } = await apiPost("/payments/create-checkout-session", payload);
       window.location.href = url;
@@ -269,7 +292,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 });
-
 
 const modal = document.getElementById("legalModal");
 const iframe = document.getElementById("legalIframe");
@@ -300,7 +322,6 @@ document.getElementById("openPrivacy")?.addEventListener("click", () => {
   openLegal("Politique de confidentialité", "politique-confidentialite.html");
 });
 
-document.querySelectorAll("[data-close-legal]").forEach(el => {
+document.querySelectorAll("[data-close-legal]").forEach((el) => {
   el.addEventListener("click", closeLegal);
 });
-
