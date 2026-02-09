@@ -342,8 +342,9 @@
         Idéale si tu veux profiter d’un boost rapide, concentré et efficace.
         Accès complet pendant 7 jours avec un accompagnement premium.
       </p>
-      <button class="promo-cta" type="button" data-formation="Promo spéciale 7 jours" data-prix="250">Réserver cette offre<span>✨</span></button>
-
+      <button class="promo-cta" type="button" data-code="P7J-250">
+        Réserver cette offre <span>✨</span>
+      </button>
     </article>
 
     <!-- Offre 14 jours -->
@@ -366,8 +367,10 @@
         d’une immersion plus longue à un tarif avantageux.
       </p>
 
-      <button class="promo-cta" type="button" data-formation="Promo spéciale 14 jours" data-prix="350">
-        Choisir cette formule <span>🎆</span></button>
+      <button class="promo-cta" type="button" data-code="P2S-350">
+        Choisir cette formule <span>🎆</span>
+      </button>
+
 
     </article>
   </div>
@@ -489,27 +492,23 @@
       });
     });
   })();
-</script>
 
-<script>
-  // Redirection vers reservation.html avec formation + prix
+
+
+  // ✅ Redirection vers reservation.html avec formation_code (nouveau système)
   document.querySelectorAll(".promo-cta").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const formation = btn.dataset.formation;
-      const prix = btn.dataset.prix;
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation(); // évite le click sur la card derrière
 
-      if (!formation || !prix) return;
+      const code = (btn.dataset.code || "").trim();
+      if (!code) return;
 
-      const url =
-        "reservation.html?formation=" +
-        encodeURIComponent(formation) +
-        "&prix=" +
-        encodeURIComponent(prix);
-
-      window.location.href = url;
+      window.location.href =
+        "reservation.html?formation_code=" + encodeURIComponent(code);
     });
   });
 </script>
+
 
 
 </body>
