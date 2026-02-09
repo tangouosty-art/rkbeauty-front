@@ -12,6 +12,15 @@
   --gradient-overlay: linear-gradient(180deg, transparent 0%, transparent 30%, rgba(245, 241, 234, 0.3) 55%, rgba(245, 241, 234, 0.85) 85%, #f5f1ea 100%);
 }
 
+/* Champ "Jours" - admin sessions */
+.table input[type="number"] {
+  min-width: 70px;      /* largeur minimale */
+  text-align: center;   /* chiffre bien centré */
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+
 /* ========================================
    Reset & Base
    ======================================== */
